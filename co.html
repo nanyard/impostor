@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Impostor Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Impostor Game Demo</h1>
+
+  <button onclick="runGame()">Generate Word</button>
+
+  <div id="output"></div>
+
+  <script>
+    // Example data (you can replace this with your full JSON)
+    const data = [
+      {
+        "Animals": {
+          "Gorilla": "Jungle",
+          "Horse": "Hoof",
+          "Wolf": "Pack"
+        }
+      },
+      {
+        "Sports": {
+          "Golf": "Iron",
+          "Soccer": "Goal",
+          "Chess": "Strategy"
+        }
+      }
+    ];
+
+    function runGame() {
+      // pick random category
+      const categoryObj = data[Math.floor(Math.random() * data.length)];
+      const category = Object.keys(categoryObj)[0];
+      const wordDict = categoryObj[category];
+
+      // pick random word
+      const words = Object.keys(wordDict);
+      const word = words[Math.floor(Math.random() * words.length)];
+      const hint = wordDict[word];
+
+      document.getElementById("output").innerHTML = `
+        <p>Category: ${category}</p>
+        <p>Word (for knowers): ${word}</p>
+        <p>Hint (for impostor): ${hint}</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
