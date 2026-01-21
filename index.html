@@ -3,46 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <title>Impostor Game</title>
+
+  <!-- Mobile scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 25px;
+      padding: 20px;
+      font-size: 20px;
     }
+
+    h1 { font-size: 36px; }
+    h2 { font-size: 28px; }
+
     input, button {
-      padding: 10px;
-      margin: 6px;
-      font-size: 16px;
+      padding: 14px;
+      margin: 8px;
+      font-size: 20px;
+      width: 90%;
+      max-width: 320px;
     }
-    .hidden {
-      display: none;
+
+    button {
+      cursor: pointer;
     }
+
+    .hidden { display: none; }
+
     .player-button {
       display: block;
-      width: 240px;
+      width: 90%;
+      max-width: 320px;
       margin: 10px auto;
-    }
-    .scoreboard {
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
-    .reveal {
       font-size: 22px;
+    }
+
+    .player-button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    .scoreboard {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .reveal {
+      font-size: 26px;
+      margin-top: 20px;
+    }
+
+    .category {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .target {
+      font-size: 24px;
+      color: darkred;
       margin-top: 15px;
     }
-    .category {
-      font-size: 20px;
-      margin-top: 10px;
-    }
-    .target {
-      font-size: 20px;
-      color: darkred;
-      margin-top: 10px;
-    }
+
     .end-buttons button {
-      display: block;
-      width: 260px;
+      width: 90%;
+      max-width: 340px;
       margin: 10px auto;
+      font-size: 22px;
     }
   </style>
 </head>
@@ -96,11 +126,19 @@
   let word = "";
   let hint = "";
   let category = "";
+
   let data = [];
+  let usedWords = {}; // { category: Set }
 
   fetch("Impostor.json")
     .then(res => res.json())
-    .then(json => data = json);
+    .then(json => {
+      data = json;
+      data.forEach(obj => {
+        const cat = Object.keys(obj)[0];
+        usedWords[cat] = new Set();
+      });
+    });
 
   function addPlayer() {
     const input = document.getElementById("nameInput");
@@ -137,11 +175,7 @@
     target = players.filter(p => p !== impostor)
       [Math.floor(Math.random() * (players.length - 1))];
 
-    const categoryObj = data[Math.floor(Math.random() * data.length)];
-    category = Object.keys(categoryObj)[0];
-    const wordDict = categoryObj[category];
-    word = Object.keys(wordDict)[Math.floor(Math.random() * Object.keys(wordDict).length)];
-    hint = wordDict[word];
+    pickUniqueWord();
 
     updateScoreboard();
     createPlayerButtons();
@@ -150,10 +184,29 @@
     document.getElementById("playerSelect").classList.remove("hidden");
   }
 
+  function pickUniqueWord() {
+    let categoryObj, words, available;
+
+    do {
+      categoryObj = data[Math.floor(Math.random() * data.length)];
+      category = Object.keys(categoryObj)[0];
+      words = categoryObj[category];
+      available = Object.keys(words)
+        .filter(w => !usedWords[category].has(w));
+
+      if (available.length === 0) {
+        usedWords[category].clear();
+      }
+    } while (available.length === 0);
+
+    word = available[Math.floor(Math.random() * available.length)];
+    hint = words[word];
+    usedWords[category].add(word);
+  }
+
   function updateScoreboard() {
-    const sb = document.getElementById("scoreboard");
-    sb.innerHTML = "Scores:<br>" +
-      players.map(p => `${p}: ${scores[p]}`).join(" | ");
+    document.getElementById("scoreboard").innerHTML =
+      "Scores:<br>" + players.map(p => `${p}: ${scores[p]}`).join(" | ");
   }
 
   function createPlayerButtons() {
@@ -164,12 +217,15 @@
       const btn = document.createElement("button");
       btn.textContent = player;
       btn.className = "player-button";
-      btn.onclick = () => revealRole(player);
+      btn.onclick = () => revealRole(player, btn);
       container.appendChild(btn);
     });
   }
 
-  function revealRole(player) {
+  function revealRole(player, button) {
+    button.disabled = true;
+    button.textContent = `${player} ✔`;
+
     document.getElementById("playerSelect").classList.add("hidden");
     document.getElementById("revealScreen").classList.remove("hidden");
 
@@ -195,7 +251,8 @@
     const first = players[Math.floor(Math.random() * players.length)];
     document.getElementById("playerSelect").classList.add("hidden");
     document.getElementById("roundScreen").classList.remove("hidden");
-    document.getElementById("firstPlayerText").textContent = `${first} goes first`;
+    document.getElementById("firstPlayerText").textContent =
+      `${first} goes first`;
   }
 
   function endRound(result) {
