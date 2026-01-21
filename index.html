@@ -19,12 +19,17 @@
     }
     .player-button {
       display: block;
-      width: 200px;
+      width: 220px;
       margin: 10px auto;
     }
     .reveal {
       font-size: 24px;
-      margin-top: 30px;
+      margin-top: 20px;
+    }
+    .target {
+      margin-top: 15px;
+      font-size: 20px;
+      color: darkred;
     }
   </style>
 </head>
@@ -51,12 +56,14 @@
   <div id="revealScreen" class="hidden">
     <h2 id="revealTitle"></h2>
     <div class="reveal" id="revealText"></div>
+    <div class="target" id="targetText"></div>
     <button onclick="backToSelection()">Done</button>
   </div>
 
   <script>
     let players = [];
     let impostor = "";
+    let target = "";
     let word = "";
     let hint = "";
     let data = [];
@@ -95,6 +102,10 @@
       // Choose impostor
       impostor = players[Math.floor(Math.random() * players.length)];
 
+      // Choose target (not impostor)
+      const possibleTargets = players.filter(p => p !== impostor);
+      target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+
       // Choose word + hint
       const categoryObj = data[Math.floor(Math.random() * data.length)];
       const category = Object.keys(categoryObj)[0];
@@ -126,9 +137,12 @@
       document.getElementById("playerSelect").classList.add("hidden");
       document.getElementById("revealScreen").classList.remove("hidden");
 
+      document.getElementById("targetText").textContent = "";
+
       if (player === impostor) {
         document.getElementById("revealTitle").textContent = "You are the IMPOSTOR";
         document.getElementById("revealText").textContent = `Hint: ${hint}`;
+        document.getElementById("targetText").textContent = `Target: ${target}`;
       } else {
         document.getElementById("revealTitle").textContent = "You know the word";
         document.getElementById("revealText").textContent = `Word: ${word}`;
