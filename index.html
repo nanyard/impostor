@@ -11,7 +11,7 @@
     }
     input, button {
       padding: 10px;
-      margin: 5px;
+      margin: 6px;
       font-size: 16px;
     }
     .hidden {
@@ -19,141 +19,173 @@
     }
     .player-button {
       display: block;
-      width: 220px;
+      width: 240px;
       margin: 10px auto;
     }
     .reveal {
-      font-size: 24px;
-      margin-top: 20px;
+      font-size: 22px;
+      margin-top: 15px;
+    }
+    .category {
+      font-size: 20px;
+      margin-top: 10px;
+      font-weight: bold;
     }
     .target {
-      margin-top: 15px;
+      margin-top: 12px;
       font-size: 20px;
       color: darkred;
+    }
+    .end-buttons button {
+      display: block;
+      width: 260px;
+      margin: 10px auto;
     }
   </style>
 </head>
 <body>
 
-  <h1>Impostor Game</h1>
+<h1>Impostor Game</h1>
 
-  <!-- PLAYER SETUP -->
-  <div id="setup">
-    <h2>Enter Player Names</h2>
-    <input id="nameInput" placeholder="Player name">
-    <button onclick="addPlayer()">Add Player</button>
-    <ul id="playerList"></ul>
-    <button onclick="startGame()">Start Game</button>
+<!-- SETUP -->
+<div id="setup">
+  <h2>Enter Player Names</h2>
+  <input id="nameInput" placeholder="Player name">
+  <button onclick="addPlayer()">Add Player</button>
+  <ul id="playerList"></ul>
+  <button onclick="startGame()">Start Game</button>
+</div>
+
+<!-- PLAYER SELECT -->
+<div id="playerSelect" class="hidden">
+  <h2>Select Your Name</h2>
+  <div id="playerButtons"></div>
+  <button onclick="startRound()">Start Round</button>
+</div>
+
+<!-- ROLE REVEAL -->
+<div id="revealScreen" class="hidden">
+  <h2 id="revealTitle"></h2>
+  <div class="category" id="categoryText"></div>
+  <div class="reveal" id="revealText"></div>
+  <div class="target" id="targetText"></div>
+  <button onclick="backToSelection()">Done</button>
+</div>
+
+<!-- ROUND START -->
+<div id="roundScreen" class="hidden">
+  <h2>Round Start</h2>
+  <div class="reveal" id="firstPlayerText"></div>
+
+  <div class="end-buttons">
+    <button onclick="endGame('Impostor Lost')">Impostor Lost</button>
+    <button onclick="endGame('Impostor Won')">Impostor Won</button>
+    <button onclick="endGame('Target Voted Out')">Target Voted Out</button>
   </div>
+</div>
 
-  <!-- PLAYER SELECTION -->
-  <div id="playerSelect" class="hidden">
-    <h2>Select Your Name</h2>
-    <div id="playerButtons"></div>
-  </div>
+<script>
+  let players = [];
+  let impostor = "";
+  let target = "";
+  let word = "";
+  let hint = "";
+  let category = "";
+  let data = [];
 
-  <!-- ROLE REVEAL -->
-  <div id="revealScreen" class="hidden">
-    <h2 id="revealTitle"></h2>
-    <div class="reveal" id="revealText"></div>
-    <div class="target" id="targetText"></div>
-    <button onclick="backToSelection()">Done</button>
-  </div>
+  fetch("Impostor.json")
+    .then(res => res.json())
+    .then(json => data = json);
 
-  <script>
-    let players = [];
-    let impostor = "";
-    let target = "";
-    let word = "";
-    let hint = "";
-    let data = [];
+  function addPlayer() {
+    const input = document.getElementById("nameInput");
+    const name = input.value.trim();
+    if (name && !players.includes(name)) {
+      players.push(name);
+      updatePlayerList();
+      input.value = "";
+    }
+  }
 
-    // Load JSON
-    fetch("Impostor.json")
-      .then(res => res.json())
-      .then(json => data = json);
+  function updatePlayerList() {
+    const list = document.getElementById("playerList");
+    list.innerHTML = "";
+    players.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = p;
+      list.appendChild(li);
+    });
+  }
 
-    function addPlayer() {
-      const input = document.getElementById("nameInput");
-      const name = input.value.trim();
-      if (name && !players.includes(name)) {
-        players.push(name);
-        updatePlayerList();
-        input.value = "";
-      }
+  function startGame() {
+    if (players.length < 3) {
+      alert("At least 3 players required");
+      return;
     }
 
-    function updatePlayerList() {
-      const list = document.getElementById("playerList");
-      list.innerHTML = "";
-      players.forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = p;
-        list.appendChild(li);
-      });
+    impostor = players[Math.floor(Math.random() * players.length)];
+    target = players.filter(p => p !== impostor)
+                    [Math.floor(Math.random() * (players.length - 1))];
+
+    const categoryObj = data[Math.floor(Math.random() * data.length)];
+    category = Object.keys(categoryObj)[0];
+    const wordDict = categoryObj[category];
+    word = Object.keys(wordDict)[Math.floor(Math.random() * Object.keys(wordDict).length)];
+    hint = wordDict[word];
+
+    document.getElementById("setup").classList.add("hidden");
+    document.getElementById("playerSelect").classList.remove("hidden");
+    createPlayerButtons();
+  }
+
+  function createPlayerButtons() {
+    const container = document.getElementById("playerButtons");
+    container.innerHTML = "";
+
+    players.forEach(player => {
+      const btn = document.createElement("button");
+      btn.textContent = player;
+      btn.className = "player-button";
+      btn.onclick = () => revealRole(player);
+      container.appendChild(btn);
+    });
+  }
+
+  function revealRole(player) {
+    document.getElementById("playerSelect").classList.add("hidden");
+    document.getElementById("revealScreen").classList.remove("hidden");
+
+    document.getElementById("categoryText").textContent = `Category: ${category}`;
+    document.getElementById("targetText").textContent = "";
+
+    if (player === impostor) {
+      document.getElementById("revealTitle").textContent = "You are the IMPOSTOR";
+      document.getElementById("revealText").textContent = `Hint: ${hint}`;
+      document.getElementById("targetText").textContent = `Target: ${target}`;
+    } else {
+      document.getElementById("revealTitle").textContent = "You know the word";
+      document.getElementById("revealText").textContent = `Word: ${word}`;
     }
+  }
 
-    function startGame() {
-      if (players.length < 3) {
-        alert("At least 3 players required");
-        return;
-      }
+  function backToSelection() {
+    document.getElementById("revealScreen").classList.add("hidden");
+    document.getElementById("playerSelect").classList.remove("hidden");
+  }
 
-      // Choose impostor
-      impostor = players[Math.floor(Math.random() * players.length)];
+  function startRound() {
+    const firstPlayer = players[Math.floor(Math.random() * players.length)];
+    document.getElementById("playerSelect").classList.add("hidden");
+    document.getElementById("roundScreen").classList.remove("hidden");
+    document.getElementById("firstPlayerText").textContent =
+      `${firstPlayer} goes first`;
+  }
 
-      // Choose target (not impostor)
-      const possibleTargets = players.filter(p => p !== impostor);
-      target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
-
-      // Choose word + hint
-      const categoryObj = data[Math.floor(Math.random() * data.length)];
-      const category = Object.keys(categoryObj)[0];
-      const wordDict = categoryObj[category];
-      const words = Object.keys(wordDict);
-      word = words[Math.floor(Math.random() * words.length)];
-      hint = wordDict[word];
-
-      document.getElementById("setup").classList.add("hidden");
-      document.getElementById("playerSelect").classList.remove("hidden");
-
-      createPlayerButtons();
-    }
-
-    function createPlayerButtons() {
-      const container = document.getElementById("playerButtons");
-      container.innerHTML = "";
-
-      players.forEach(player => {
-        const btn = document.createElement("button");
-        btn.textContent = player;
-        btn.className = "player-button";
-        btn.onclick = () => revealRole(player);
-        container.appendChild(btn);
-      });
-    }
-
-    function revealRole(player) {
-      document.getElementById("playerSelect").classList.add("hidden");
-      document.getElementById("revealScreen").classList.remove("hidden");
-
-      document.getElementById("targetText").textContent = "";
-
-      if (player === impostor) {
-        document.getElementById("revealTitle").textContent = "You are the IMPOSTOR";
-        document.getElementById("revealText").textContent = `Hint: ${hint}`;
-        document.getElementById("targetText").textContent = `Target: ${target}`;
-      } else {
-        document.getElementById("revealTitle").textContent = "You know the word";
-        document.getElementById("revealText").textContent = `Word: ${word}`;
-      }
-    }
-
-    function backToSelection() {
-      document.getElementById("revealScreen").classList.add("hidden");
-      document.getElementById("playerSelect").classList.remove("hidden");
-    }
-  </script>
+  function endGame(result) {
+    alert(result);
+    location.reload();
+  }
+</script>
 
 </body>
 </html>
