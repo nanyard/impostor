@@ -7,7 +7,7 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 30px;
+      padding: 25px;
     }
     input, button {
       padding: 10px;
@@ -22,6 +22,10 @@
       width: 240px;
       margin: 10px auto;
     }
+    .scoreboard {
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
     .reveal {
       font-size: 22px;
       margin-top: 15px;
@@ -29,12 +33,11 @@
     .category {
       font-size: 20px;
       margin-top: 10px;
-      font-weight: bold;
     }
     .target {
-      margin-top: 12px;
       font-size: 20px;
       color: darkred;
+      margin-top: 10px;
     }
     .end-buttons button {
       display: block;
@@ -58,6 +61,7 @@
 
 <!-- PLAYER SELECT -->
 <div id="playerSelect" class="hidden">
+  <div class="scoreboard" id="scoreboard"></div>
   <h2>Select Your Name</h2>
   <div id="playerButtons"></div>
   <button onclick="startRound()">Start Round</button>
@@ -78,14 +82,15 @@
   <div class="reveal" id="firstPlayerText"></div>
 
   <div class="end-buttons">
-    <button onclick="endGame('Impostor Lost')">Impostor Lost</button>
-    <button onclick="endGame('Impostor Won')">Impostor Won</button>
-    <button onclick="endGame('Target Voted Out')">Target Voted Out</button>
+    <button onclick="endRound('lost')">Impostor Lost</button>
+    <button onclick="endRound('won')">Impostor Won</button>
+    <button onclick="endRound('target')">Target Voted Out</button>
   </div>
 </div>
 
 <script>
   let players = [];
+  let scores = {};
   let impostor = "";
   let target = "";
   let word = "";
@@ -102,6 +107,7 @@
     const name = input.value.trim();
     if (name && !players.includes(name)) {
       players.push(name);
+      scores[name] = 0;
       updatePlayerList();
       input.value = "";
     }
@@ -122,10 +128,14 @@
       alert("At least 3 players required");
       return;
     }
+    document.getElementById("setup").classList.add("hidden");
+    newRound();
+  }
 
+  function newRound() {
     impostor = players[Math.floor(Math.random() * players.length)];
     target = players.filter(p => p !== impostor)
-                    [Math.floor(Math.random() * (players.length - 1))];
+      [Math.floor(Math.random() * (players.length - 1))];
 
     const categoryObj = data[Math.floor(Math.random() * data.length)];
     category = Object.keys(categoryObj)[0];
@@ -133,9 +143,17 @@
     word = Object.keys(wordDict)[Math.floor(Math.random() * Object.keys(wordDict).length)];
     hint = wordDict[word];
 
-    document.getElementById("setup").classList.add("hidden");
-    document.getElementById("playerSelect").classList.remove("hidden");
+    updateScoreboard();
     createPlayerButtons();
+
+    document.getElementById("roundScreen").classList.add("hidden");
+    document.getElementById("playerSelect").classList.remove("hidden");
+  }
+
+  function updateScoreboard() {
+    const sb = document.getElementById("scoreboard");
+    sb.innerHTML = "Scores:<br>" +
+      players.map(p => `${p}: ${scores[p]}`).join(" | ");
   }
 
   function createPlayerButtons() {
@@ -174,16 +192,23 @@
   }
 
   function startRound() {
-    const firstPlayer = players[Math.floor(Math.random() * players.length)];
+    const first = players[Math.floor(Math.random() * players.length)];
     document.getElementById("playerSelect").classList.add("hidden");
     document.getElementById("roundScreen").classList.remove("hidden");
-    document.getElementById("firstPlayerText").textContent =
-      `${firstPlayer} goes first`;
+    document.getElementById("firstPlayerText").textContent = `${first} goes first`;
   }
 
-  function endGame(result) {
-    alert(result);
-    location.reload();
+  function endRound(result) {
+    if (result === "lost") {
+      players.forEach(p => {
+        if (p !== impostor) scores[p] += 5;
+      });
+    } else if (result === "won") {
+      scores[impostor] += 15;
+    } else if (result === "target") {
+      scores[impostor] += 45;
+    }
+    newRound();
   }
 </script>
 
