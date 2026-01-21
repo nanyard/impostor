@@ -174,7 +174,7 @@
       "Education": "Classroom",
       "English": "Literature",
       "Computer Science": "Algorithms",
-      "E-Hall": "",
+      "E-Hall": "Close",
       "D-Hall": "Farther",
       "Shenandoah": "Characters",
       "Jennings": "Clean",
@@ -211,4 +211,5 @@
     }
   }
 ]
+
 
