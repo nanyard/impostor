@@ -23,46 +23,53 @@
 </head>
 <body>
 
-  <h1>Impostor Game Demo</h1>
+  <h1>Impostor Game</h1>
 
   <button onclick="runGame()">Generate Word</button>
 
-  <div id="output"></div>
+  <div id="output">Loading data...</div>
 
   <script>
-    // Example data (you can replace this with your full JSON)
-    const data = [
-      {
-        "Animals": {
-          "Gorilla": "Jungle",
-          "Horse": "Hoof",
-          "Wolf": "Pack"
+    let data = [];
+
+    // Load JSON file
+    fetch("Impostor.json")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to load Impostor.json");
         }
-      },
-      {
-        "Sports": {
-          "Golf": "Iron",
-          "Soccer": "Goal",
-          "Chess": "Strategy"
-        }
-      }
-    ];
+        return response.json();
+      })
+      .then(json => {
+        data = json;
+        document.getElementById("output").textContent = "Ready!";
+      })
+      .catch(error => {
+        document.getElementById("output").textContent =
+          "Error loading JSON file.";
+        console.error(error);
+      });
 
     function runGame() {
-      // pick random category
+      if (data.length === 0) {
+        alert("Data not loaded yet!");
+        return;
+      }
+
+      // Pick random category
       const categoryObj = data[Math.floor(Math.random() * data.length)];
       const category = Object.keys(categoryObj)[0];
       const wordDict = categoryObj[category];
 
-      // pick random word
+      // Pick random word
       const words = Object.keys(wordDict);
       const word = words[Math.floor(Math.random() * words.length)];
       const hint = wordDict[word];
 
       document.getElementById("output").innerHTML = `
-        <p>Category: ${category}</p>
-        <p>Word (for knowers): ${word}</p>
-        <p>Hint (for impostor): ${hint}</p>
+        <p><strong>Category:</strong> ${category}</p>
+        <p><strong>Word (knowers):</strong> ${word}</p>
+        <p><strong>Hint (impostor):</strong> ${hint}</p>
       `;
     }
   </script>
