@@ -65,4 +65,205 @@
 <div id="setup">
   <h2>Enter Player Names</h2>
   <input id="nameInput" placeholder="Player name">
-  <button onclick="addPlayer()">Add
+  <button type="button" onclick="addPlayer()">Add Player</button>
+  <ul id="playerList"></ul>
+  <button type="button" onclick="startGame()">Start Game</button>
+</div>
+
+<!-- PLAYER SELECT -->
+<div id="playerSelect" class="hidden">
+  <div class="scoreboard" id="scoreboard"></div>
+  <h2>Select Your Name</h2>
+  <div id="playerButtons"></div>
+  <button type="button" onclick="startRound()">Start Round</button>
+</div>
+
+<!-- ROLE REVEAL -->
+<div id="revealScreen" class="hidden">
+  <h2 id="revealTitle"></h2>
+  <div class="category" id="categoryText"></div>
+  <div class="reveal" id="revealText"></div>
+  <div class="target" id="targetText"></div>
+  <button type="button" onclick="backToSelection()">Done</button>
+</div>
+
+<!-- ROUND START -->
+<div id="roundScreen" class="hidden">
+  <h2>Round Start</h2>
+  <div class="reveal" id="firstPlayerText"></div>
+  <button type="button" onclick="endRound('lost')">Impostor Lost</button>
+  <button type="button" onclick="endRound('won')">Impostor Won</button>
+  <button type="button" onclick="endRound('target')">Target Voted Out</button>
+</div>
+
+<script>
+  let players = [];
+  let scores = {};
+  let impostor = "";
+  let target = "";
+  let category = "";
+  let word = "";
+  let hint = "";
+
+  let lastStartingPlayer = null;
+  let impostorStreak = {};
+  let impostorCooldown = {};
+
+  let data = [];
+  let usedWords = {};
+
+  fetch("Impostor.json")
+    .then(res => res.json())
+    .then(json => {
+      data = json;
+      data.forEach(obj => {
+        const cat = Object.keys(obj)[0];
+        usedWords[cat] = new Set();
+      });
+    });
+
+  function addPlayer() {
+    const input = document.getElementById("nameInput");
+    const name = input.value.trim();
+    if (name && !players.includes(name)) {
+      players.push(name);
+      scores[name] = 0;
+      impostorStreak[name] = 0;
+      impostorCooldown[name] = 0;
+      updatePlayerList();
+      input.value = "";
+    }
+  }
+
+  function updatePlayerList() {
+    const list = document.getElementById("playerList");
+    list.innerHTML = "";
+    players.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = p;
+      list.appendChild(li);
+    });
+  }
+
+  function startGame() {
+    if (players.length < 3) {
+      alert("At least 3 players required");
+      return;
+    }
+    document.getElementById("setup").classList.add("hidden");
+    newRound();
+  }
+
+  function newRound() {
+    players.forEach(p => {
+      if (impostorCooldown[p] > 0) impostorCooldown[p]--;
+    });
+
+    const eligible = players.filter(p => impostorCooldown[p] === 0);
+    impostor = eligible[Math.floor(Math.random() * eligible.length)];
+
+    players.forEach(p => {
+      if (p === impostor) {
+        impostorStreak[p]++;
+        if (impostorStreak[p] === 2) impostorCooldown[p] = 3;
+      } else {
+        impostorStreak[p] = 0;
+      }
+    });
+
+    target = players.filter(p => p !== impostor)
+      [Math.floor(Math.random() * (players.length - 1))];
+
+    pickUniqueWord();
+    updateScoreboard();
+    createPlayerButtons();
+
+    document.getElementById("roundScreen").classList.add("hidden");
+    document.getElementById("playerSelect").classList.remove("hidden");
+  }
+
+  function pickUniqueWord() {
+    let categoryObj, words, available;
+    do {
+      categoryObj = data[Math.floor(Math.random() * data.length)];
+      category = Object.keys(categoryObj)[0];
+      words = categoryObj[category];
+      available = Object.keys(words).filter(w => !usedWords[category].has(w));
+      if (available.length === 0) usedWords[category].clear();
+    } while (available.length === 0);
+
+    word = available[Math.floor(Math.random() * available.length)];
+    hint = words[word];
+    usedWords[category].add(word);
+  }
+
+  function updateScoreboard() {
+    document.getElementById("scoreboard").innerHTML =
+      "Scores:<br>" + players.map(p => `${p}: ${scores[p]}`).join(" | ");
+  }
+
+  function createPlayerButtons() {
+    const container = document.getElementById("playerButtons");
+    container.innerHTML = "";
+    players.forEach(player => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = player;
+      btn.className = "player-button";
+      btn.onclick = () => revealRole(player, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  function revealRole(player, button) {
+    button.disabled = true;
+    button.textContent = `${player} ✔`;
+
+    document.getElementById("playerSelect").classList.add("hidden");
+    document.getElementById("revealScreen").classList.remove("hidden");
+
+    document.getElementById("categoryText").textContent = `Category: ${category}`;
+    document.getElementById("targetText").textContent = "";
+
+    if (player === impostor) {
+      document.getElementById("revealTitle").textContent = "You are the IMPOSTOR";
+      document.getElementById("revealText").textContent = `Hint: ${hint}`;
+      document.getElementById("targetText").textContent = `Target: ${target}`;
+    } else {
+      document.getElementById("revealTitle").textContent = "You know the word";
+      document.getElementById("revealText").textContent = `Word: ${word}`;
+    }
+  }
+
+  function backToSelection() {
+    document.getElementById("revealScreen").classList.add("hidden");
+    document.getElementById("playerSelect").classList.remove("hidden");
+  }
+
+  function startRound() {
+    let starter;
+    do {
+      starter = players[Math.floor(Math.random() * players.length)];
+    } while (starter === lastStartingPlayer);
+
+    lastStartingPlayer = starter;
+
+    document.getElementById("playerSelect").classList.add("hidden");
+    document.getElementById("roundScreen").classList.remove("hidden");
+    document.getElementById("firstPlayerText").textContent = `${starter} goes first`;
+  }
+
+  function endRound(result) {
+    if (result === "lost") {
+      players.forEach(p => { if (p !== impostor) scores[p] += 5; });
+    } else if (result === "won") {
+      scores[impostor] += 15;
+    } else if (result === "target") {
+      scores[impostor] += 45;
+    }
+    newRound();
+  }
+</script>
+
+</body>
+</html>
