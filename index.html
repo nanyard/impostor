@@ -1,62 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Impostor Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Impostor Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-      font-size: 20px;
-    }
-    h1 { font-size: 36px; }
-    h2 { font-size: 28px; }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+  font-size: 22px;
+}
+h1 { font-size: 36px; }
+h2 { font-size: 28px; }
 
-    input, button {
-      padding: 14px;
-      margin: 8px;
-      font-size: 20px;
-      width: 90%;
-      max-width: 340px;
-    }
+input, button {
+  padding: 14px;
+  margin: 8px;
+  font-size: 22px;
+  width: 90%;
+  max-width: 360px;
+}
 
-    .hidden { display: none; }
+.hidden { display: none; }
 
-    .player-button {
-      display: block;
-      margin: 10px auto;
-      font-size: 22px;
-    }
+.player-button {
+  display: block;
+  margin: 10px auto;
+  font-size: 24px;
+}
+.player-button:disabled {
+  background: #ccc;
+}
 
-    .player-button:disabled {
-      background: #ccc;
-      color: #666;
-    }
+.scoreboard {
+  font-size: 22px;
+  margin-bottom: 15px;
+}
 
-    .scoreboard {
-      font-size: 22px;
-      margin-bottom: 15px;
-    }
+.timer {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 15px 0;
+}
 
-    .reveal {
-      font-size: 26px;
-      margin-top: 15px;
-    }
+.category {
+  font-size: 24px;
+  font-weight: bold;
+}
 
-    .category {
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .target {
-      font-size: 24px;
-      color: darkred;
-    }
-  </style>
+.target {
+  font-size: 24px;
+  color: darkred;
+}
+</style>
 </head>
+
 <body>
 
 <h1>Impostor Game</h1>
@@ -75,194 +75,199 @@
   <div class="scoreboard" id="scoreboard"></div>
   <h2>Select Your Name</h2>
   <div id="playerButtons"></div>
-  <button type="button" onclick="startRound()">Start Round</button>
 </div>
 
 <!-- ROLE REVEAL -->
 <div id="revealScreen" class="hidden">
   <h2 id="revealTitle"></h2>
   <div class="category" id="categoryText"></div>
-  <div class="reveal" id="revealText"></div>
+  <div id="revealText"></div>
   <div class="target" id="targetText"></div>
-  <button type="button" onclick="backToSelection()">Done</button>
+  <button type="button" onclick="finishReveal()">Done</button>
 </div>
 
-<!-- ROUND START -->
-<div id="roundScreen" class="hidden">
-  <h2>Round Start</h2>
-  <div class="reveal" id="firstPlayerText"></div>
+<!-- TIMER PHASE -->
+<div id="timerScreen" class="hidden">
+  <h2 id="timerTitle"></h2>
+  <div class="timer" id="timerDisplay"></div>
+</div>
+
+<!-- ROUND END -->
+<div id="roundEnd" class="hidden">
+  <h2>Round Result</h2>
   <button type="button" onclick="endRound('lost')">Impostor Lost</button>
   <button type="button" onclick="endRound('won')">Impostor Won</button>
-  <button type="button" onclick="endRound('target')">Target Voted Out</button>
+  <button type="button" onclick="endRound('target45')">Target Out (Knows Word)</button>
+  <button type="button" onclick="endRound('target15')">Target Out (No Word)</button>
+  <button type="button" onclick="endRound('skip')">Skip Round</button>
 </div>
 
 <script>
-  let players = [];
-  let scores = {};
-  let impostor = "";
-  let target = "";
-  let category = "";
-  let word = "";
-  let hint = "";
+let players = [];
+let scores = {};
+let impostor = "";
+let target = "";
+let category = "";
+let word = "";
+let hint = "";
 
-  let lastStartingPlayer = null;
-  let impostorStreak = {};
-  let impostorCooldown = {};
+let revealedCount = 0;
+let impostorHistory = [];
+let usedWords = {};
+let data = [];
+let timerInterval;
 
-  let data = [];
-  let usedWords = {};
+fetch("Impostor.json")
+  .then(r => r.json())
+  .then(json => {
+    data = json;
+    json.forEach(obj => usedWords[Object.keys(obj)[0]] = new Set());
+  });
 
-  fetch("Impostor.json")
-    .then(res => res.json())
-    .then(json => {
-      data = json;
-      data.forEach(obj => {
-        const cat = Object.keys(obj)[0];
-        usedWords[cat] = new Set();
-      });
-    });
-
-  function addPlayer() {
-    const input = document.getElementById("nameInput");
-    const name = input.value.trim();
-    if (name && !players.includes(name)) {
-      players.push(name);
-      scores[name] = 0;
-      impostorStreak[name] = 0;
-      impostorCooldown[name] = 0;
-      updatePlayerList();
-      input.value = "";
-    }
+function addPlayer() {
+  const input = document.getElementById("nameInput");
+  const name = input.value.trim();
+  if (name && !players.includes(name)) {
+    players.push(name);
+    scores[name] = 0;
+    updatePlayerList();
+    input.value = "";
   }
+}
 
-  function updatePlayerList() {
-    const list = document.getElementById("playerList");
-    list.innerHTML = "";
-    players.forEach(p => {
-      const li = document.createElement("li");
-      li.textContent = p;
-      list.appendChild(li);
-    });
+function updatePlayerList() {
+  document.getElementById("playerList").innerHTML =
+    players.map(p => `<li>${p}</li>`).join("");
+}
+
+function startGame() {
+  if (players.length < 3) return alert("Need at least 3 players");
+  document.getElementById("setup").classList.add("hidden");
+  newRound();
+}
+
+function newRound() {
+  revealedCount = 0;
+  pickImpostor();
+  pickTarget();
+  pickWord();
+  updateScoreboard();
+  createButtons();
+  document.getElementById("playerSelect").classList.remove("hidden");
+}
+
+function pickImpostor() {
+  const recent = impostorHistory.slice(-5);
+  const eligible = players.filter(p =>
+    recent.filter(x => x === p).length < 2
+  );
+  impostor = eligible[Math.floor(Math.random() * eligible.length)];
+  impostorHistory.push(impostor);
+  if (impostorHistory.length > 5) impostorHistory.shift();
+}
+
+function pickTarget() {
+  target = players.filter(p => p !== impostor)
+    [Math.floor(Math.random() * (players.length - 1))];
+}
+
+function pickWord() {
+  let catObj, words, available;
+  do {
+    catObj = data[Math.floor(Math.random() * data.length)];
+    category = Object.keys(catObj)[0];
+    words = catObj[category];
+    available = Object.keys(words).filter(w => !usedWords[category].has(w));
+    if (available.length === 0) usedWords[category].clear();
+  } while (available.length === 0);
+  word = available[Math.floor(Math.random() * available.length)];
+  hint = words[word];
+  usedWords[category].add(word);
+}
+
+function updateScoreboard() {
+  document.getElementById("scoreboard").innerHTML =
+    players.map(p => `${p}: ${scores[p]}`).join(" | ");
+}
+
+function createButtons() {
+  const div = document.getElementById("playerButtons");
+  div.innerHTML = "";
+  players.forEach(p => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "player-button";
+    b.textContent = p;
+    b.onclick = () => reveal(p, b);
+    div.appendChild(b);
+  });
+}
+
+function reveal(player, btn) {
+  btn.disabled = true;
+  revealedCount++;
+  document.getElementById("playerSelect").classList.add("hidden");
+  document.getElementById("revealScreen").classList.remove("hidden");
+  document.getElementById("categoryText").textContent = `Category: ${category}`;
+  document.getElementById("targetText").textContent = "";
+
+  if (player === impostor) {
+    revealTitle.textContent = "You are the IMPOSTOR";
+    revealText.textContent = `Hint: ${hint}`;
+    targetText.textContent = `Target: ${target}`;
+  } else {
+    revealTitle.textContent = "You know the word";
+    revealText.textContent = `Word: ${word}`;
   }
+}
 
-  function startGame() {
-    if (players.length < 3) {
-      alert("At least 3 players required");
-      return;
-    }
-    document.getElementById("setup").classList.add("hidden");
-    newRound();
+function finishReveal() {
+  document.getElementById("revealScreen").classList.add("hidden");
+  if (revealedCount === players.length) {
+    startTimer(300, "Discussion & Voting");
+  } else {
+    document.getElementById("playerSelect").classList.remove("hidden");
   }
+}
 
-  function newRound() {
-    players.forEach(p => {
-      if (impostorCooldown[p] > 0) impostorCooldown[p]--;
-    });
-
-    const eligible = players.filter(p => impostorCooldown[p] === 0);
-    impostor = eligible[Math.floor(Math.random() * eligible.length)];
-
-    players.forEach(p => {
-      if (p === impostor) {
-        impostorStreak[p]++;
-        if (impostorStreak[p] === 2) impostorCooldown[p] = 3;
+function startTimer(seconds, title) {
+  clearInterval(timerInterval);
+  document.getElementById("timerScreen").classList.remove("hidden");
+  document.getElementById("timerTitle").textContent = title;
+  let time = seconds;
+  updateTimer(time);
+  timerInterval = setInterval(() => {
+    time--;
+    updateTimer(time);
+    if (time <= 0) {
+      clearInterval(timerInterval);
+      if (seconds === 300) {
+        startTimer(120, "Impostor Guess");
       } else {
-        impostorStreak[p] = 0;
+        document.getElementById("timerScreen").classList.add("hidden");
+        document.getElementById("roundEnd").classList.remove("hidden");
       }
-    });
-
-    target = players.filter(p => p !== impostor)
-      [Math.floor(Math.random() * (players.length - 1))];
-
-    pickUniqueWord();
-    updateScoreboard();
-    createPlayerButtons();
-
-    document.getElementById("roundScreen").classList.add("hidden");
-    document.getElementById("playerSelect").classList.remove("hidden");
-  }
-
-  function pickUniqueWord() {
-    let categoryObj, words, available;
-    do {
-      categoryObj = data[Math.floor(Math.random() * data.length)];
-      category = Object.keys(categoryObj)[0];
-      words = categoryObj[category];
-      available = Object.keys(words).filter(w => !usedWords[category].has(w));
-      if (available.length === 0) usedWords[category].clear();
-    } while (available.length === 0);
-
-    word = available[Math.floor(Math.random() * available.length)];
-    hint = words[word];
-    usedWords[category].add(word);
-  }
-
-  function updateScoreboard() {
-    document.getElementById("scoreboard").innerHTML =
-      "Scores:<br>" + players.map(p => `${p}: ${scores[p]}`).join(" | ");
-  }
-
-  function createPlayerButtons() {
-    const container = document.getElementById("playerButtons");
-    container.innerHTML = "";
-    players.forEach(player => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = player;
-      btn.className = "player-button";
-      btn.onclick = () => revealRole(player, btn);
-      container.appendChild(btn);
-    });
-  }
-
-  function revealRole(player, button) {
-    button.disabled = true;
-    button.textContent = `${player} ✔`;
-
-    document.getElementById("playerSelect").classList.add("hidden");
-    document.getElementById("revealScreen").classList.remove("hidden");
-
-    document.getElementById("categoryText").textContent = `Category: ${category}`;
-    document.getElementById("targetText").textContent = "";
-
-    if (player === impostor) {
-      document.getElementById("revealTitle").textContent = "You are the IMPOSTOR";
-      document.getElementById("revealText").textContent = `Hint: ${hint}`;
-      document.getElementById("targetText").textContent = `Target: ${target}`;
-    } else {
-      document.getElementById("revealTitle").textContent = "You know the word";
-      document.getElementById("revealText").textContent = `Word: ${word}`;
     }
+  }, 1000);
+}
+
+function updateTimer(t) {
+  const m = Math.floor(t / 60);
+  const s = t % 60;
+  document.getElementById("timerDisplay").textContent =
+    `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function endRound(result) {
+  document.getElementById("roundEnd").classList.add("hidden");
+  if (result === "lost") {
+    players.forEach(p => p !== impostor && (scores[p] += 5));
   }
-
-  function backToSelection() {
-    document.getElementById("revealScreen").classList.add("hidden");
-    document.getElementById("playerSelect").classList.remove("hidden");
-  }
-
-  function startRound() {
-    let starter;
-    do {
-      starter = players[Math.floor(Math.random() * players.length)];
-    } while (starter === lastStartingPlayer);
-
-    lastStartingPlayer = starter;
-
-    document.getElementById("playerSelect").classList.add("hidden");
-    document.getElementById("roundScreen").classList.remove("hidden");
-    document.getElementById("firstPlayerText").textContent = `${starter} goes first`;
-  }
-
-  function endRound(result) {
-    if (result === "lost") {
-      players.forEach(p => { if (p !== impostor) scores[p] += 5; });
-    } else if (result === "won") {
-      scores[impostor] += 15;
-    } else if (result === "target") {
-      scores[impostor] += 45;
-    }
-    newRound();
-  }
+  if (result === "won") scores[impostor] += 15;
+  if (result === "target45") scores[impostor] += 45;
+  if (result === "target15") scores[impostor] += 15;
+  newRound();
+}
 </script>
 
 </body>
