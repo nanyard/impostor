@@ -6,49 +6,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 20px;
-    font-size: 22px;
-  }
-  h1 { font-size: 36px; }
-  h2 { font-size: 28px; }
+body { font-family: Arial; text-align: center; padding: 20px; font-size: 22px; }
+h1 { font-size: 36px; }
+h2 { font-size: 28px; }
 
-  input, button {
-    padding: 14px;
-    margin: 8px;
-    font-size: 22px;
-    width: 90%;
-    max-width: 360px;
-  }
+input, button {
+  padding: 14px;
+  margin: 8px;
+  font-size: 22px;
+  width: 90%;
+  max-width: 360px;
+}
 
-  .hidden { display: none; }
+.hidden { display: none; }
+.player-button { display:block; margin:10px auto; font-size:24px; }
+.player-button:disabled { background:#ccc; }
 
-  .player-button {
-    display: block;
-    margin: 10px auto;
-    font-size: 24px;
-  }
-
-  .player-button:disabled {
-    background: #ccc;
-    color: #666;
-  }
-
-  .scoreboard {
-    font-size: 22px;
-    margin-bottom: 15px;
-  }
-
-  .reveal { font-size: 26px; }
-  .category { font-weight: bold; font-size: 24px; }
-  .target { color: darkred; font-size: 24px; }
-
-  .timer {
-    font-size: 48px;
-    margin: 20px 0;
-  }
+.scoreboard { margin-bottom:15px; font-size:20px; }
+.timer { font-size:48px; margin:20px; }
+.category { font-weight:bold; font-size:24px; }
+.target { color:darkred; font-size:24px; }
 </style>
 </head>
 
@@ -69,16 +46,23 @@
   <div class="scoreboard" id="scoreboard"></div>
   <h2>Select Your Name</h2>
   <div id="playerButtons"></div>
-  <button type="button" onclick="startDiscussion()">Start Discussion</button>
+  <button type="button" onclick="startStarterScreen()">Continue</button>
 </div>
 
 <!-- ROLE REVEAL -->
 <div id="revealScreen" class="hidden">
   <h2 id="revealTitle"></h2>
   <div class="category" id="categoryText"></div>
-  <div class="reveal" id="revealText"></div>
+  <div id="revealText"></div>
   <div class="target" id="targetText"></div>
   <button type="button" onclick="backToSelection()">Done</button>
+</div>
+
+<!-- STARTING PLAYER SCREEN -->
+<div id="starterScreen" class="hidden">
+  <h2>Starting Player</h2>
+  <div style="font-size:40px;" id="starterName"></div>
+  <button type="button" onclick="startDiscussion()">Start Discussion</button>
 </div>
 
 <!-- TIMER -->
@@ -91,212 +75,120 @@
 <!-- ROUND END -->
 <div id="roundEnd" class="hidden">
   <h2>Round Result</h2>
-  <button type="button" onclick="endRound('lost')">Impostor Lost</button>
-  <button type="button" onclick="endRound('won')">Impostor Won</button>
-  <button type="button" onclick="endRound('target')">Target Voted Out (15)</button>
-  <button type="button" onclick="endRound('targetWord')">Target + Word (45)</button>
-  <button type="button" onclick="endRound('skip')">Skip Round</button>
+  <button onclick="endRound('lost')">Impostor Lost</button>
+  <button onclick="endRound('won')">Impostor Won</button>
+  <button onclick="endRound('target')">Target Out, No Word (15)</button>
+  <button onclick="endRound('targetWord')">Target + Word (45)</button>
+  <button onclick="endRound('skip')">Skip Round</button>
 </div>
 
 <script>
-let players = [];
-let scores = {};
-let impostor = "";
-let target = "";
-let category = "";
-let word = "";
-let hint = "";
-
-let data = [];
-let usedWords = {};
-let viewedPlayers = new Set();
-
-let timerInterval = null;
-let currentTimerPhase = "";
-
-let impostorHistory = {}; // track last 5 rounds
+let players=[], scores={}, data=[], usedWords={}, impostorHistory={};
+let impostor="", target="", category="", word="", hint="";
+let viewedPlayers=new Set(), timerInterval=null, currentTimerPhase="";
 
 fetch("Impostor.json")
-  .then(res => res.json())
-  .then(json => {
-    data = json;
-    data.forEach(obj => {
-      const c = Object.keys(obj)[0];
-      usedWords[c] = new Set();
-    });
-  });
+.then(r=>r.json())
+.then(json=>{
+  data=json;
+  data.forEach(o=>usedWords[Object.keys(o)[0]]=new Set());
+});
 
-function addPlayer() {
-  const input = document.getElementById("nameInput");
-  const name = input.value.trim();
-  if (!name || players.includes(name)) return;
-  players.push(name);
-  scores[name] = 0;
-  impostorHistory[name] = [];
-  updatePlayerList();
-  input.value = "";
+function addPlayer(){
+  let n=nameInput.value.trim();
+  if(!n||players.includes(n))return;
+  players.push(n); scores[n]=0; impostorHistory[n]=[];
+  playerList.innerHTML+=`<li>${n}</li>`; nameInput.value="";
 }
 
-function updatePlayerList() {
-  const list = document.getElementById("playerList");
-  list.innerHTML = "";
-  players.forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = p;
-    list.appendChild(li);
-  });
-}
-
-function startGame() {
-  if (players.length < 3) {
-    alert("At least 3 players required");
-    return;
-  }
-  document.getElementById("setup").classList.add("hidden");
+function startGame(){
+  if(players.length<3){alert("Need 3+ players");return;}
+  setup.classList.add("hidden");
   newRound();
 }
 
-function newRound() {
+function newRound(){
   viewedPlayers.clear();
 
-  // enforce max 2 impostor appearances in last 5 rounds
-  let eligible = players.filter(p =>
-    impostorHistory[p].slice(-5).filter(x => x).length < 2
-  );
-  if (eligible.length === 0) eligible = [...players];
+  // Weighted impostor selection
+  let pool=[];
+  players.forEach(p=>{
+    let last5=impostorHistory[p].slice(-5);
+    let count=last5.filter(x=>x).length;
+    let wasLast=last5[last5.length-1]===true;
+    if(count>=2)return;
 
-  impostor = eligible[Math.floor(Math.random() * eligible.length)];
+    if(!wasLast) for(let i=0;i<5;i++) pool.push(p);
+    else pool.push(p);
+  });
+  if(pool.length===0) pool=[...players];
+  impostor=pool[Math.floor(Math.random()*pool.length)];
 
-  players.forEach(p => {
-    impostorHistory[p].push(p === impostor);
-    if (impostorHistory[p].length > 5) impostorHistory[p].shift();
+  players.forEach(p=>{
+    impostorHistory[p].push(p===impostor);
+    if(impostorHistory[p].length>5)impostorHistory[p].shift();
   });
 
-  target = players.filter(p => p !== impostor)
-    [Math.floor(Math.random() * (players.length - 1))];
-
+  target=players.filter(p=>p!==impostor)[Math.floor(Math.random()*(players.length-1))];
   pickWord();
   updateScoreboard();
   createButtons();
-
-  document.getElementById("roundEnd").classList.add("hidden");
-  document.getElementById("playerSelect").classList.remove("hidden");
+  roundEnd.classList.add("hidden");
+  playerSelect.classList.remove("hidden");
 }
 
-function pickWord() {
-  let obj, available;
-  do {
-    obj = data[Math.floor(Math.random() * data.length)];
-    category = Object.keys(obj)[0];
-    available = Object.keys(obj[category])
-      .filter(w => !usedWords[category].has(w));
-    if (available.length === 0) usedWords[category].clear();
-  } while (available.length === 0);
-
-  word = available[Math.floor(Math.random() * available.length)];
-  hint = obj[category][word];
+function pickWord(){
+  let obj,avail;
+  do{
+    obj=data[Math.floor(Math.random()*data.length)];
+    category=Object.keys(obj)[0];
+    avail=Object.keys(obj[category]).filter(w=>!usedWords[category].has(w));
+    if(avail.length===0)usedWords[category].clear();
+  }while(avail.length===0);
+  word=avail[Math.floor(Math.random()*avail.length)];
+  hint=obj[category][word];
   usedWords[category].add(word);
 }
 
-function updateScoreboard() {
-  document.getElementById("scoreboard").innerHTML =
-    "Scores:<br>" + players.map(p => `${p}: ${scores[p]}`).join(" | ");
+function updateScoreboard(){
+  scoreboard.innerHTML="Scores:<br>"+players.map(p=>`${p}: ${scores[p]}`).join(" | ");
 }
 
-function createButtons() {
-  const div = document.getElementById("playerButtons");
-  div.innerHTML = "";
-  players.forEach(p => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = p;
-    btn.className = "player-button";
-    btn.onclick = () => reveal(p, btn);
-    div.appendChild(btn);
+function createButtons(){
+  playerButtons.innerHTML="";
+  players.forEach(p=>{
+    let b=document.createElement("button");
+    b.type="button"; b.textContent=p; b.className="player-button";
+    b.onclick=()=>reveal(p,b);
+    playerButtons.appendChild(b);
   });
 }
 
-function reveal(player, button) {
-  if (viewedPlayers.has(player)) return;
-  viewedPlayers.add(player);
-  button.disabled = true;
+function reveal(p,b){
+  if(viewedPlayers.has(p))return;
+  viewedPlayers.add(p); b.disabled=true;
+  playerSelect.classList.add("hidden");
+  revealScreen.classList.remove("hidden");
 
-  document.getElementById("playerSelect").classList.add("hidden");
-  document.getElementById("revealScreen").classList.remove("hidden");
+  categoryText.textContent=`Category: ${category}`;
+  targetText.textContent="";
 
-  document.getElementById("categoryText").textContent = `Category: ${category}`;
-  document.getElementById("targetText").textContent = "";
-
-  if (player === impostor) {
-    document.getElementById("revealTitle").textContent = "You are the IMPOSTOR";
-    document.getElementById("revealText").textContent = `Hint: ${hint}`;
-    document.getElementById("targetText").textContent = `Target: ${target}`;
-  } else {
-    document.getElementById("revealTitle").textContent = "You know the word";
-    document.getElementById("revealText").textContent = `Word: ${word}`;
+  if(p===impostor){
+    revealTitle.textContent="You are the IMPOSTOR";
+    revealText.textContent=`Hint: ${hint}`;
+    targetText.textContent=`Target: ${target}`;
+  }else{
+    revealTitle.textContent="You know the word";
+    revealText.textContent=`Word: ${word}`;
   }
 }
 
-function backToSelection() {
-  document.getElementById("revealScreen").classList.add("hidden");
-  document.getElementById("playerSelect").classList.remove("hidden");
+function backToSelection(){
+  revealScreen.classList.add("hidden");
+  playerSelect.classList.remove("hidden");
 }
 
-function startDiscussion() {
-  document.getElementById("playerSelect").classList.add("hidden");
-  startTimer(300, "Discussion & Voting");
-}
-
-function startTimer(seconds, title) {
-  clearInterval(timerInterval);
-  currentTimerPhase = title;
-
-  document.getElementById("timerScreen").classList.remove("hidden");
-  document.getElementById("timerTitle").textContent = title;
-
-  let time = seconds;
-  updateTimer(time);
-
-  timerInterval = setInterval(() => {
-    time--;
-    updateTimer(time);
-    if (time <= 0) {
-      clearInterval(timerInterval);
-      handleTimerEnd();
-    }
-  }, 1000);
-}
-
-function updateTimer(time) {
-  const m = Math.floor(time / 60);
-  const s = time % 60;
-  document.getElementById("timerDisplay").textContent =
-    `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function skipTimer() {
-  clearInterval(timerInterval);
-  handleTimerEnd();
-}
-
-function handleTimerEnd() {
-  if (currentTimerPhase === "Discussion & Voting") {
-    startTimer(120, "Impostor Guess");
-  } else {
-    document.getElementById("timerScreen").classList.add("hidden");
-    document.getElementById("roundEnd").classList.remove("hidden");
-  }
-}
-
-function endRound(result) {
-  if (result === "lost") {
-    players.forEach(p => { if (p !== impostor) scores[p] += 5; });
-  }
-  if (result === "won") scores[impostor] += 15;
-  if (result === "target") scores[impostor] += 15;
-  if (result === "targetWord") scores[impostor] += 45;
-  newRound();
-}
-</script>
-</body>
-</html>
+function startStarterScreen(){
+  let starter=players[Math.floor(Math.random()*players.length)];
+  playerSelect.classList.add("hidden");
+  starter
