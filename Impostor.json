@@ -1,7 +1,6 @@
 [
   {
     "Animals": {
-      "Gorilla": "Jungle",
       "Horse": "Hoof",
       "Polar Bear": "Ice",
       "Cow": "Dairy",
@@ -47,7 +46,6 @@
       "Cliff": "Ledge",
       "Reef": "Barrier",
       "Prairie": "Grass",
-      "E-Hall": "",
       "D-Hall": "Farther",
       "Shenandoah": "Characters",
       "Jennings": "Clean",
@@ -59,9 +57,11 @@
       "Festival": "Windows",
       "UREC": "Sweats",
       "Frat Row": "Trash",
-      "Devon Lane": "Vinny",
+      "Devon Lane": "Go to",
       "The Shortcut": "Needles",
-      "Memorial Hall": "Climb"
+      "Memorial Hall": "Climb",
+      "Nate and Mock's Dorm": "HQ",
+      "Jaden and Craig's Dorm": "Noise complaint"
     }
   },
   {
@@ -157,10 +157,7 @@
   {
     "School": {
       "Communications": "Media",
-      "Psychology": "Insane",
-      "Nursing": "Sorority",
       "IT": "Network",
-      "Kinesiology": "Easy",
       "Marketing": "Sell",
       "Business": "Frat",
       "Finance": "Wolf",
@@ -181,12 +178,14 @@
     }
   },
   {
-    "Days": {
+    "Events": {
       "Fall Break '24": "Mall",
       "Crazy Thursday": "Bulletproof",
       "Steez Night": "Jersey",
-      "Fun in the Sun": "Tan"
+      "Fun in the Sun": "Tan",
+      "Craig's Arrest": "Jail"
     }
   }
 ]
+
 
