@@ -119,7 +119,6 @@
       "Door": "hinge",
       "Key": "teeth",
       "Bag": "capacity",
-      "Lamp": "lumens",
       "Clock": "mechanism",
       "Mirror": "reflection",
       "Bottle": "seal",
@@ -152,26 +151,7 @@
       "Polo": "chukker",
       "Darts": "checkout",
       "Archery": "anchor",
-      "Billiards": "english"
-    }
-  },
-  {
-    "Movies & TV": {
-      "Titanic": "Iceberg",
-      "Avatar": "Pandora",
-      "Inception": "Dream",
-      "Frozen": "Snow",
-      "Jaws": "Fin",
-      "Star Wars": "Jedi",
-      "The Matrix": "Simulation",
-      "Friends": "Sitcom",
-      "The Office": "Cubicle",
-      "Breaking Bad": "Chemistry",
-      "Stranger Things": "Upside",
-      "Harry Potter": "Wand",
-      "Jurassic Park": "Dinosaurs",
-      "Batman": "Cowl",
-      "Spider-Man": "Web"
+      "Billiards": "bar"
     }
   },
   {
@@ -191,25 +171,21 @@
   },
   {
     "People": {
-      "Nick and Andrew": "Pound",
       "Ben": "Grip",
-      "Lucas": "Fent",
       "Finn": "Weird",
       "Rohak": "Hair",
-      "The Julia's": "Five"
+      "The Julia's": "Five",
+      "Steph Curry": "Ballin",
+      "Lebron": "Old",
+      "Messi": "Short"
     }
   },
   {
     "Days": {
-      "A Night in Hell": "Bounce",
       "Fall Break '24": "Mall",
-      "Alejandro Night": "Tall",
       "Crazy Thursday": "Bulletproof",
       "Steez Night": "Jersey",
-      "Acacia Party": "Packed",
-      "Flare Method": "Subtle",
-      "Fun in the Sun": "Tan",
-      "Jaden's Birthday": "Tito's"
+      "Fun in the Sun": "Tan"
     }
   }
 ]
