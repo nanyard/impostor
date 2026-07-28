@@ -167,18 +167,11 @@
     }
   },
   {
-    "People": {
+    "JMU": {
       "Ben": "Grip",
       "Finn": "Weird",
       "Rohak": "Hair",
       "The Julia's": "Five",
-      "Steph Curry": "Ballin",
-      "Lebron": "Old",
-      "Messi": "Short"
-    }
-  },
-  {
-    "Events": {
       "Fall Break '24": "Mall",
       "Crazy Thursday": "Bulletproof",
       "Steez Night": "Jersey",
@@ -186,6 +179,20 @@
       "Craig's Arrest": "Jail"
     }
   }
+  {
+    "Slime": {
+      "Boyd": "Gray",
+      "Dara": "Kitchen",
+      "Ana Maria": "Immigration",
+      "Samuel Minh": "Criminal",
+      "Noah Cha": "Korean",
+      "Caroline Kolleiker": "Colossal",
+      "Daniel Hunter": "Skiing",
+      "Luke Heslep": "Loud",
+      "Cooper Cloern": "Dyslexia"
+    }
+  }
+  
 ]
 
 
