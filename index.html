@@ -67,15 +67,32 @@ input, button {
   <button type="button" onclick="skipTimer()">Skip Countdown</button>
 </div>
 
-<div id="roundEnd" class="hidden">
-  <h2>Round Result</h2>
-  <button type="button" onclick="endRound('lost')">Impostor Lost</button>
-  <button type="button" onclick="endRound('won')">Impostor Won</button>
-  <button type="button" onclick="endRound('target')">Target Out, No Word (15)</button>
-  <button type="button" onclick="endRound('targetWord')">Target + Word (45)</button>
-  <button type="button" onclick="endRound('skip')">Skip Round</button>
+<div id="voteScreen" class="hidden">
+
+<h2>Who was voted out?</h2>
+
+<div id="voteButtons"></div>
+
+<button onclick="skipRound()">
+Skip Round
+</button>
+
 </div>
 
+<div id="guessResult" class="hidden">
+
+<h2>Did an impostor guess the word?</h2>
+
+<button onclick="finishRound(true)">
+Yes
+</button>
+
+<button onclick="finishRound(false)">
+No
+</button>
+
+</div>
+  
 <script>
 let players = [];
 let scores = {};
@@ -166,16 +183,33 @@ function newRound(){
   const impostorCount =
     players.length > 6 ? 2 : 1;
 
-while(currentRound.impostors.length < impostorCount){
+const selectionPool = [...pool];
 
-    const pick =
-        pool[Math.floor(Math.random()*pool.length)];
+while (
+    currentRound.impostors.length < impostorCount &&
+    selectionPool.length > 0
+) {
 
-    if(!currentRound.impostors.includes(pick))
+    const index =
+        Math.floor(Math.random()*selectionPool.length);
+
+    const pick = selectionPool[index];
+
+    if(!currentRound.impostors.includes(pick)){
+
         currentRound.impostors.push(pick);
 
-}
+        for(let i=selectionPool.length-1;i>=0;i--){
 
+            if(selectionPool[i]===pick)
+                selectionPool.splice(i,1);
+
+        }
+
+    }
+
+}
+}
 function commitHistory(){
 
     if(currentRound.historyApplied) return;
@@ -194,7 +228,6 @@ function commitHistory(){
 
     currentRound.historyApplied=true;
 
-}
 
   const innocentPlayers = players.filter(player =>
     !currentRound.impostors.includes(player)
@@ -216,12 +249,17 @@ function pickWord(){
   do{
     obj=data[Math.floor(Math.random()*data.length)];
     currentRound.category=Object.keys(obj)[0];
-    avail=Object.keys(obj[category]).filter(w=>!usedWords[category].has(w));
-    if(avail.length===0)usedWords[category].clear();
+    avail = Object.keys(obj[currentRound.category]).filter(
+    w => !usedWords[currentRound.category].has(w)
+);
+    if(avail.length===0)
+    usedWords[currentRound.category].clear();
   }while(avail.length===0);
   currentRound.word=avail[Math.floor(Math.random()*avail.length)];
-  currentRound.hint=obj[category][word];
-  usedWords[category].add(word);
+  currentRound.hint =
+    obj[currentRound.category][currentRound.word];
+  usedWords[currentRound.category]
+    .add(currentRound.word);
 }
 
 function updateScoreboard(){
@@ -264,7 +302,7 @@ function backToSelection(){
 }
 
 function startStarterScreen(){
-  let currentRound.starter =
+  currentRound.starter =
     players[Math.floor(Math.random()*players.length)];
   document.getElementById("playerSelect").classList.add("hidden");
   document.getElementById("starterScreen").classList.remove("hidden");
@@ -331,12 +369,10 @@ function showVoteScreen(){
 
 }
 
-function endRound(r){
-  if(r==="lost") players.forEach(p=>{if(p!==impostor)scores[p]+=5;});
-  if(r==="won") scores[impostor]+=15;
-  if(r==="target") scores[impostor]+=15;
-  if(r==="targetWord") scores[impostor]+=45;
-  newRound();
+function skipRound(){
+
+    newRound();
+
 }
 function finishRound(guessed){
 
@@ -386,8 +422,10 @@ function finishRound(guessed){
 
     updateScoreboard();
 
-    document.getElementById("guessResult")
-        .classList.add("hidden");
+    showVoteScreen();
+
+    document.getElementById("voteScreen")
+        .classList.remove("hidden");
 
     newRound();
 
