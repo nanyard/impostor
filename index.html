@@ -184,6 +184,14 @@ function newRound(){
     players.length > 6 ? 2 : 1;
 
 const selectionPool = [...pool];
+  
+if(new Set(selectionPool).size < impostorCount){
+
+    selectionPool.length = 0;
+
+    players.forEach(player => selectionPool.push(player));
+
+}
 
 while (
     currentRound.impostors.length < impostorCount &&
@@ -209,6 +217,20 @@ while (
     }
 
 }
+  const innocentPlayers = players.filter(player =>
+    !currentRound.impostors.includes(player)
+);
+
+  currentRound.target =
+      innocentPlayers[Math.floor(Math.random()*innocentPlayers.length)];
+  
+  pickWord();
+  updateScoreboard();
+  createButtons();
+  
+  document.getElementById("voteScreen").classList.add("hidden");
+  document.getElementById("guessResult").classList.add("hidden");
+  document.getElementById("playerSelect").classList.remove("hidden");
 }
 function commitHistory(){
 
@@ -229,19 +251,9 @@ function commitHistory(){
     currentRound.historyApplied=true;
 
 
-  const innocentPlayers = players.filter(player =>
-    !currentRound.impostors.includes(player)
-);
 
-currentRound.target =
-    innocentPlayers[
-        Math.floor(Math.random()*innocentPlayers.length)
-    ];
-  pickWord();
-  updateScoreboard();
-  createButtons();
-  document.getElementById("roundEnd").classList.add("hidden");
-  document.getElementById("playerSelect").classList.remove("hidden");
+
+
 }
 
 function pickWord(){
@@ -335,9 +347,16 @@ function skipTimer(){ clearInterval(timerInterval); handleTimerEnd(); }
 function handleTimerEnd(){
   if(currentTimerPhase==="Discussion & Voting")
     startTimer(120,"Impostor Guess");
-  else{
-    document.getElementById("timerScreen").classList.add("hidden");
-    document.getElementById("roundEnd").classList.remove("hidden");
+  else {
+
+    document.getElementById("timerScreen")
+        .classList.add("hidden");
+
+    showVoteScreen();
+
+    document.getElementById("voteScreen")
+        .classList.remove("hidden");
+
   }
 }
 function showVoteScreen(){
@@ -363,13 +382,20 @@ function showVoteScreen(){
 
     currentRound.vote = player;
 
-    document.getElementById("roundEnd").classList.add("hidden");
+    document.getElementById("voteScreen")
+    .classList.add("hidden");
 
     document.getElementById("guessResult").classList.remove("hidden");
 
 }
 
 function skipRound(){
+
+    document.getElementById("voteScreen")
+        .classList.add("hidden");
+
+    document.getElementById("guessResult")
+        .classList.add("hidden");
 
     newRound();
 
@@ -422,10 +448,7 @@ function finishRound(guessed){
 
     updateScoreboard();
 
-    showVoteScreen();
 
-    document.getElementById("voteScreen")
-        .classList.remove("hidden");
 
     newRound();
 
