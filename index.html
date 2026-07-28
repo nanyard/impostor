@@ -77,9 +77,27 @@ input, button {
 </div>
 
 <script>
-let players=[], scores={}, data=[], usedWords={}, impostorHistory={};
-let impostor="", target="", category="", word="", hint="";
-let viewedPlayers=new Set(), timerInterval=null, currentTimerPhase="";
+let players = [];
+let scores = {};
+let data = [];
+let usedWords = {};
+let impostorHistory = {};
+
+let currentRound = {
+    impostors: [],
+    target: "",
+    starter: "",
+    category: "",
+    word: "",
+    hint: "",
+    vote: null,
+    guessedWord: false,
+    historyApplied: false
+};
+
+let viewedPlayers = new Set();
+let timerInterval = null;
+let currentTimerPhase = "";
 
 fetch("Impostor.json")
 .then(r=>r.json())
@@ -111,6 +129,27 @@ function startGame(){
 }
 
 function newRound(){
+  currentRound = {
+
+    impostors: [],
+
+    target: "",
+
+    starter: "",
+
+    category: "",
+
+    word: "",
+
+    hint: "",
+
+    vote: null,
+
+    guessedWord: false,
+
+    historyApplied: false
+
+};
   viewedPlayers.clear();
 
   let pool=[];
@@ -124,14 +163,47 @@ function newRound(){
     else pool.push(p);
   });
   if(pool.length===0) pool=[...players];
-  impostor=pool[Math.floor(Math.random()*pool.length)];
+  const impostorCount =
+    players.length > 6 ? 2 : 1;
 
-  players.forEach(p=>{
-    impostorHistory[p].push(p===impostor);
-    if(impostorHistory[p].length>5)impostorHistory[p].shift();
-  });
+while(currentRound.impostors.length < impostorCount){
 
-  target=players.filter(p=>p!==impostor)[Math.floor(Math.random()*(players.length-1))];
+    const pick =
+        pool[Math.floor(Math.random()*pool.length)];
+
+    if(!currentRound.impostors.includes(pick))
+        currentRound.impostors.push(pick);
+
+}
+
+function commitHistory(){
+
+    if(currentRound.historyApplied) return;
+
+    players.forEach(player=>{
+
+        const wasImpostor =
+            currentRound.impostors.includes(player);
+
+        impostorHistory[player].push(wasImpostor);
+
+        if(impostorHistory[player].length>5)
+            impostorHistory[player].shift();
+
+    });
+
+    currentRound.historyApplied=true;
+
+}
+
+  const innocentPlayers = players.filter(player =>
+    !currentRound.impostors.includes(player)
+);
+
+currentRound.target =
+    innocentPlayers[
+        Math.floor(Math.random()*innocentPlayers.length)
+    ];
   pickWord();
   updateScoreboard();
   createButtons();
@@ -143,12 +215,12 @@ function pickWord(){
   let obj,avail;
   do{
     obj=data[Math.floor(Math.random()*data.length)];
-    category=Object.keys(obj)[0];
+    currentRound.category=Object.keys(obj)[0];
     avail=Object.keys(obj[category]).filter(w=>!usedWords[category].has(w));
     if(avail.length===0)usedWords[category].clear();
   }while(avail.length===0);
-  word=avail[Math.floor(Math.random()*avail.length)];
-  hint=obj[category][word];
+  currentRound.word=avail[Math.floor(Math.random()*avail.length)];
+  currentRound.hint=obj[category][word];
   usedWords[category].add(word);
 }
 
@@ -173,16 +245,16 @@ function reveal(p,b){
   document.getElementById("playerSelect").classList.add("hidden");
   document.getElementById("revealScreen").classList.remove("hidden");
 
-  document.getElementById("categoryText").textContent=`Category: ${category}`;
+  document.getElementById("categoryText").textContent=`Category: ${currentRound.category}`;
   document.getElementById("targetText").textContent="";
 
-  if(p===impostor){
+  if(currentRound.impostors.includes(p)){
     document.getElementById("revealTitle").textContent="You are the IMPOSTOR";
-    document.getElementById("revealText").textContent=`Hint: ${hint}`;
-    document.getElementById("targetText").textContent=`Target: ${target}`;
+    document.getElementById("revealText").textContent=`Hint: ${currentRound.hint}`;
+    document.getElementById("targetText").textContent=`Target: ${currentRound.target}`;
   }else{
     document.getElementById("revealTitle").textContent="You know the word";
-    document.getElementById("revealText").textContent=`Word: ${word}`;
+    document.getElementById("revealText").textContent=`Word: ${currentRound.word}`;
   }
 }
 
@@ -192,10 +264,11 @@ function backToSelection(){
 }
 
 function startStarterScreen(){
-  let starter=players[Math.floor(Math.random()*players.length)];
+  let currentRound.starter =
+    players[Math.floor(Math.random()*players.length)];
   document.getElementById("playerSelect").classList.add("hidden");
   document.getElementById("starterScreen").classList.remove("hidden");
-  document.getElementById("starterName").textContent=starter;
+  document.getElementById("starterName").textContent=currentRound.starter;
 }
 
 function startDiscussion(){
@@ -229,6 +302,34 @@ function handleTimerEnd(){
     document.getElementById("roundEnd").classList.remove("hidden");
   }
 }
+function showVoteScreen(){
+
+    const div=document.getElementById("voteButtons");
+
+    div.innerHTML="";
+
+    players.forEach(player=>{
+
+        let b=document.createElement("button");
+
+        b.textContent=player;
+
+        b.onclick=()=>recordVote(player);
+
+        div.appendChild(b);
+
+    });
+
+}
+  function recordVote(player){
+
+    currentRound.vote = player;
+
+    document.getElementById("roundEnd").classList.add("hidden");
+
+    document.getElementById("guessResult").classList.remove("hidden");
+
+}
 
 function endRound(r){
   if(r==="lost") players.forEach(p=>{if(p!==impostor)scores[p]+=5;});
@@ -236,6 +337,60 @@ function endRound(r){
   if(r==="target") scores[impostor]+=15;
   if(r==="targetWord") scores[impostor]+=45;
   newRound();
+}
+function finishRound(guessed){
+
+    currentRound.guessedWord = guessed;
+
+    commitHistory();
+
+    const voted =
+        currentRound.vote;
+
+    const impostors =
+        currentRound.impostors;
+
+    if(impostors.includes(voted)){
+
+        players.forEach(player=>{
+
+            if(!impostors.includes(player))
+                scores[player]+=5;
+
+        });
+
+    }
+
+    else if(voted===currentRound.target){
+
+        if(guessed){
+
+            const points =
+                impostors.length===2 ? 30 : 45;
+
+            impostors.forEach(player=>
+                scores[player]+=points
+            );
+
+        }
+
+        else{
+
+            impostors.forEach(player=>
+                scores[player]+=15
+            );
+
+        }
+
+    }
+
+    updateScoreboard();
+
+    document.getElementById("guessResult")
+        .classList.add("hidden");
+
+    newRound();
+
 }
 </script>
 </body>
