@@ -290,13 +290,18 @@ function pickWord() {
 
     currentRound.word =
         availableWords[Math.floor(Math.random() * availableWords.length)];
-
+    
     currentRound.hint =
         words[currentRound.word];
+    
+    alert("Category = " + currentRound.category);
+    alert("Word = " + currentRound.word);
+    alert("Hint = " + currentRound.hint);
 
     usedWords[currentRound.category].add(currentRound.word);
 
     console.log(currentRound);
+  alert(JSON.stringify(obj));
 }
 
 function updateScoreboard(){
