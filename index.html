@@ -143,9 +143,14 @@ function startGame(){
   if(players.length<3){alert("Need 3+ players");return;}
   document.getElementById("setup").classList.add("hidden");
   newRound();
+  if (data.length === 0) {
+    alert("Words are still loading. Please wait a second and try again.");
+    return;
+}
 }
 
 function newRound(){
+  console.log("newRound started");
   currentRound = {
 
     impostors: [],
@@ -217,14 +222,17 @@ while (
     }
 
 }
+  console.log(currentRound.impostors);
   const innocentPlayers = players.filter(player =>
     !currentRound.impostors.includes(player)
 );
 
   currentRound.target =
       innocentPlayers[Math.floor(Math.random()*innocentPlayers.length)];
+  console.log(currentRound.target);
   
   pickWord();
+  console.log(currentRound.word);
   updateScoreboard();
   createButtons();
   
@@ -257,21 +265,39 @@ function commitHistory(){
 }
 
 function pickWord(){
-  let obj,avail;
-  do{
-    obj=data[Math.floor(Math.random()*data.length)];
-    currentRound.category=Object.keys(obj)[0];
-    avail = Object.keys(obj[currentRound.category]).filter(
-    w => !usedWords[currentRound.category].has(w)
-);
-    if(avail.length===0)
-    usedWords[currentRound.category].clear();
-  }while(avail.length===0);
-  currentRound.word=avail[Math.floor(Math.random()*avail.length)];
-  currentRound.hint =
-    obj[currentRound.category][currentRound.word];
-  usedWords[currentRound.category]
-    .add(currentRound.word);
+
+    if(data.length === 0){
+        console.error("No JSON loaded.");
+        return;
+    }
+
+    let obj;
+    let avail=[];
+
+    do{
+
+        obj = data[Math.floor(Math.random()*data.length)];
+
+        currentRound.category = Object.keys(obj)[0];
+
+        avail = Object.keys(obj[currentRound.category]).filter(
+            w => !usedWords[currentRound.category].has(w)
+        );
+
+        if(avail.length===0){
+            usedWords[currentRound.category].clear();
+        }
+
+    }while(avail.length===0);
+
+    currentRound.word =
+        avail[Math.floor(Math.random()*avail.length)];
+
+    currentRound.hint =
+        obj[currentRound.category][currentRound.word];
+
+    usedWords[currentRound.category].add(currentRound.word);
+
 }
 
 function updateScoreboard(){
