@@ -264,40 +264,39 @@ function commitHistory(){
 
 }
 
-function pickWord(){
+function pickWord() {
 
-    if(data.length === 0){
-        console.error("No JSON loaded.");
+    if (data.length === 0) {
+        console.error("JSON not loaded.");
         return;
     }
 
-    let obj;
-    let avail=[];
+    // Pick a random category
+    const obj = data[Math.floor(Math.random() * data.length)];
 
-    do{
+    currentRound.category = Object.keys(obj)[0];
 
-        obj = data[Math.floor(Math.random()*data.length)];
+    const words = obj[currentRound.category];
 
-        currentRound.category = Object.keys(obj)[0];
+    const availableWords = Object.keys(words).filter(
+        word => !usedWords[currentRound.category].has(word)
+    );
 
-        avail = Object.keys(obj[currentRound.category]).filter(
-            w => !usedWords[currentRound.category].has(w)
-        );
+    if (availableWords.length === 0) {
+        usedWords[currentRound.category].clear();
 
-        if(avail.length===0){
-            usedWords[currentRound.category].clear();
-        }
-
-    }while(avail.length===0);
+        availableWords.push(...Object.keys(words));
+    }
 
     currentRound.word =
-        avail[Math.floor(Math.random()*avail.length)];
+        availableWords[Math.floor(Math.random() * availableWords.length)];
 
     currentRound.hint =
-        obj[currentRound.category][currentRound.word];
+        words[currentRound.word];
 
     usedWords[currentRound.category].add(currentRound.word);
 
+    console.log(currentRound);
 }
 
 function updateScoreboard(){
