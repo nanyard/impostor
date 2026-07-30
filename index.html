@@ -117,6 +117,24 @@ let timerInterval = null;
 let currentTimerPhase = "";
 
 fetch("Impostor.json")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+        return response.json();
+    })
+    .then(json => {
+        data = json;
+
+        data.forEach(obj => {
+            usedWords[Object.keys(obj)[0]] = new Set();
+        });
+
+        alert("JSON loaded successfully!");
+    })
+    .catch(error => {
+        alert("Failed to load Impostor.json\n\n" + error);
+    });
 .then(r=>r.json())
 .then(json=>{
   data=json;
