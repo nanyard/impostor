@@ -135,11 +135,7 @@ fetch("Impostor.json")
     .catch(error => {
         alert("Failed to load Impostor.json\n\n" + error);
     });
-.then(r=>r.json())
-.then(json=>{
-  data=json;
-  data.forEach(o=>usedWords[Object.keys(o)[0]]=new Set());
-});
+
 
 function addPlayer(){
   const input=document.getElementById("nameInput");
@@ -158,13 +154,20 @@ function addPlayer(){
 }
 
 function startGame(){
-  if(players.length<3){alert("Need 3+ players");return;}
-  document.getElementById("setup").classList.add("hidden");
-  newRound();
-  if (data.length === 0) {
-    alert("Words are still loading. Please wait a second and try again.");
-    return;
-}
+
+    if(players.length < 3){
+        alert("Need 3+ players");
+        return;
+    }
+
+    if(data.length === 0){
+        alert("Words are still loading.");
+        return;
+    }
+
+    document.getElementById("setup").classList.add("hidden");
+
+    newRound();
 }
 
 function newRound(){
