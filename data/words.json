@@ -1,0 +1,184 @@
+{
+  "categories": [
+    {
+      "id": "food-drink",
+      "name": "Food & Drink",
+      "words": [
+        { "word": "Pizza", "hints": ["cheese", "Italy", "slice"] },
+        { "word": "Sushi", "hints": ["rice", "Japan", "seaweed"] },
+        { "word": "Pancakes", "hints": ["syrup", "breakfast", "stack"] },
+        { "word": "Tacos", "hints": ["tortilla", "Mexico", "filling"] },
+        { "word": "Ice Cream", "hints": ["dessert", "cone", "cold"] },
+        { "word": "Popcorn", "hints": ["cinema", "kernels", "butter"] },
+        { "word": "Spaghetti", "hints": ["pasta", "tomato", "fork"] },
+        { "word": "Burger", "hints": ["bun", "patty", "fries"] },
+        { "word": "Chocolate", "hints": ["cocoa", "sweet", "bar"] },
+        { "word": "Coffee", "hints": ["caffeine", "mug", "roasted"] },
+        { "word": "Lemonade", "hints": ["sour", "citrus", "pitcher"] },
+        { "word": "Dumplings", "hints": ["steamed", "filling", "Asia"] }
+      ]
+    },
+    {
+      "id": "animals",
+      "name": "Animals",
+      "words": [
+        { "word": "Elephant", "hints": ["trunk", "tusks", "Africa"] },
+        { "word": "Penguin", "hints": ["Antarctica", "waddle", "ice"] },
+        { "word": "Dolphin", "hints": ["ocean", "intelligent", "fins"] },
+        { "word": "Tiger", "hints": ["stripes", "jungle", "roar"] },
+        { "word": "Owl", "hints": ["nocturnal", "feathers", "hoot"] },
+        { "word": "Kangaroo", "hints": ["pouch", "hop", "Australia"] },
+        { "word": "Octopus", "hints": ["tentacles", "ink", "ocean"] },
+        { "word": "Giraffe", "hints": ["neck", "spots", "tall"] },
+        { "word": "Panda", "hints": ["bamboo", "black-and-white", "China"] },
+        { "word": "Shark", "hints": ["teeth", "fin", "predator"] },
+        { "word": "Parrot", "hints": ["colorful", "mimic", "beak"] },
+        { "word": "Hedgehog", "hints": ["spines", "small", "nocturnal"] }
+      ]
+    },
+    {
+      "id": "places",
+      "name": "Places",
+      "words": [
+        { "word": "Beach", "hints": ["sand", "waves", "sunscreen"] },
+        { "word": "Library", "hints": ["books", "quiet", "shelves"] },
+        { "word": "Museum", "hints": ["exhibits", "history", "gallery"] },
+        { "word": "Airport", "hints": ["flights", "terminal", "luggage"] },
+        { "word": "Hospital", "hints": ["doctors", "patients", "beds"] },
+        { "word": "Castle", "hints": ["towers", "royalty", "moat"] },
+        { "word": "Volcano", "hints": ["lava", "eruption", "mountain"] },
+        { "word": "Desert", "hints": ["sand", "dry", "dunes"] },
+        { "word": "Rainforest", "hints": ["trees", "humid", "wildlife"] },
+        { "word": "Skyscraper", "hints": ["tall", "floors", "city"] },
+        { "word": "Lighthouse", "hints": ["coast", "beacon", "tower"] },
+        { "word": "Stadium", "hints": ["seats", "crowd", "field"] }
+      ]
+    },
+    {
+      "id": "movies-tv",
+      "name": "Movies & TV",
+      "words": [
+        { "word": "Titanic", "hints": ["ship", "iceberg", "romance"] },
+        { "word": "Avatar", "hints": ["Pandora", "blue", "aliens"] },
+        { "word": "Jaws", "hints": ["shark", "beach", "suspense"] },
+        { "word": "Frozen", "hints": ["sisters", "ice", "musical"] },
+        { "word": "Star Wars", "hints": ["galaxy", "Jedi", "Force"] },
+        { "word": "Harry Potter", "hints": ["wizard", "Hogwarts", "magic"] },
+        { "word": "Jurassic Park", "hints": ["dinosaurs", "island", "theme park"] },
+        { "word": "The Lion King", "hints": ["lions", "savanna", "pride"] },
+        { "word": "Toy Story", "hints": ["toys", "Woody", "Buzz"] },
+        { "word": "Stranger Things", "hints": ["Upside Down", "kids", "supernatural"] },
+        { "word": "The Office", "hints": ["workplace", "mockumentary", "bosses"] },
+        { "word": "Friends", "hints": ["coffee shop", "group", "sitcom"] }
+      ]
+    },
+    {
+      "id": "sports",
+      "name": "Sports",
+      "words": [
+        { "word": "Soccer", "hints": ["goal", "ball", "pitch"] },
+        { "word": "Basketball", "hints": ["hoop", "court", "dribble"] },
+        { "word": "Tennis", "hints": ["racket", "net", "serve"] },
+        { "word": "Baseball", "hints": ["bat", "diamond", "pitcher"] },
+        { "word": "Golf", "hints": ["clubs", "course", "hole"] },
+        { "word": "Swimming", "hints": ["pool", "laps", "strokes"] },
+        { "word": "Boxing", "hints": ["gloves", "ring", "punches"] },
+        { "word": "Cycling", "hints": ["bike", "pedals", "race"] },
+        { "word": "Skiing", "hints": ["snow", "slopes", "poles"] },
+        { "word": "Volleyball", "hints": ["net", "spike", "beach"] },
+        { "word": "Cricket", "hints": ["wickets", "bat", "field"] },
+        { "word": "Gymnastics", "hints": ["balance", "routine", "flips"] }
+      ]
+    },
+    {
+      "id": "jobs",
+      "name": "Jobs",
+      "words": [
+        { "word": "Doctor", "hints": ["patients", "hospital", "medicine"] },
+        { "word": "Teacher", "hints": ["students", "classroom", "lessons"] },
+        { "word": "Chef", "hints": ["kitchen", "recipes", "cooking"] },
+        { "word": "Firefighter", "hints": ["fire", "hose", "rescue"] },
+        { "word": "Police Officer", "hints": ["badge", "patrol", "law"] },
+        { "word": "Pilot", "hints": ["cockpit", "flying", "runway"] },
+        { "word": "Farmer", "hints": ["crops", "tractor", "harvest"] },
+        { "word": "Artist", "hints": ["paint", "canvas", "creativity"] },
+        { "word": "Engineer", "hints": ["design", "build", "math"] },
+        { "word": "Dentist", "hints": ["teeth", "drill", "clinic"] },
+        { "word": "Lawyer", "hints": ["court", "clients", "argument"] },
+        { "word": "Astronaut", "hints": ["space", "rocket", "training"] }
+      ]
+    },
+    {
+      "id": "objects",
+      "name": "Objects",
+      "words": [
+        { "word": "Umbrella", "hints": ["rain", "handle", "canopy"] },
+        { "word": "Toothbrush", "hints": ["bristles", "paste", "bathroom"] },
+        { "word": "Backpack", "hints": ["straps", "carry", "zipper"] },
+        { "word": "Camera", "hints": ["lens", "photos", "shutter"] },
+        { "word": "Guitar", "hints": ["strings", "chords", "strum"] },
+        { "word": "Mirror", "hints": ["reflection", "glass", "wall"] },
+        { "word": "Clock", "hints": ["hands", "time", "tick"] },
+        { "word": "Key", "hints": ["lock", "metal", "door"] },
+        { "word": "Scissors", "hints": ["blades", "cut", "handles"] },
+        { "word": "Pillow", "hints": ["soft", "bed", "sleep"] },
+        { "word": "Suitcase", "hints": ["travel", "wheels", "luggage"] },
+        { "word": "Candle", "hints": ["wax", "flame", "wick"] }
+      ]
+    },
+    {
+      "id": "nature",
+      "name": "Nature",
+      "words": [
+        { "word": "Rainbow", "hints": ["colors", "rain", "arc"] },
+        { "word": "Thunderstorm", "hints": ["lightning", "rain", "boom"] },
+        { "word": "Waterfall", "hints": ["cliff", "water", "cascade"] },
+        { "word": "Glacier", "hints": ["ice", "slow", "mountain"] },
+        { "word": "Forest", "hints": ["trees", "trail", "wildlife"] },
+        { "word": "River", "hints": ["flow", "banks", "water"] },
+        { "word": "Mountain", "hints": ["peak", "climb", "summit"] },
+        { "word": "Sunrise", "hints": ["dawn", "horizon", "light"] },
+        { "word": "Coral Reef", "hints": ["ocean", "colorful", "fish"] },
+        { "word": "Tornado", "hints": ["wind", "funnel", "storm"] },
+        { "word": "Cactus", "hints": ["desert", "spines", "green"] },
+        { "word": "Aurora", "hints": ["lights", "sky", "polar"] }
+      ]
+    },
+    {
+      "id": "music",
+      "name": "Music",
+      "words": [
+        { "word": "Piano", "hints": ["keys", "black-and-white", "classical"] },
+        { "word": "Violin", "hints": ["strings", "bow", "orchestra"] },
+        { "word": "Drums", "hints": ["beat", "rhythm", "sticks"] },
+        { "word": "Microphone", "hints": ["sing", "stage", "voice"] },
+        { "word": "Concert", "hints": ["tickets", "crowd", "stage"] },
+        { "word": "Headphones", "hints": ["ears", "music", "wire"] },
+        { "word": "Karaoke", "hints": ["sing", "lyrics", "screen"] },
+        { "word": "Saxophone", "hints": ["brass", "jazz", "reed"] },
+        { "word": "DJ", "hints": ["turntables", "mix", "club"] },
+        { "word": "Orchestra", "hints": ["conductor", "instruments", "symphony"] },
+        { "word": "Guitar Solo", "hints": ["strings", "riff", "spotlight"] },
+        { "word": "Music Festival", "hints": ["tents", "bands", "weekend"] }
+      ]
+    },
+    {
+      "id": "travel",
+      "name": "Travel",
+      "words": [
+        { "word": "Passport", "hints": ["stamps", "border", "identity"] },
+        { "word": "Hotel", "hints": ["rooms", "booking", "lobby"] },
+        { "word": "Map", "hints": ["directions", "roads", "paper"] },
+        { "word": "Train", "hints": ["tracks", "carriage", "station"] },
+        { "word": "Cruise", "hints": ["ship", "ocean", "deck"] },
+        { "word": "Taxi", "hints": ["meter", "driver", "city"] },
+        { "word": "Beach Resort", "hints": ["palm trees", "pool", "vacation"] },
+        { "word": "Hiking", "hints": ["trail", "boots", "nature"] },
+        { "word": "Souvenir", "hints": ["gift", "memory", "shop"] },
+        { "word": "Road Trip", "hints": ["car", "highway", "snacks"] },
+        { "word": "Backpacking", "hints": ["hostel", "budget", "adventure"] },
+        { "word": "Sightseeing", "hints": ["landmarks", "camera", "tour"] }
+      ]
+    }
+  ]
+}

@@ -1,242 +1,270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Impostor Game</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d12" />
+    <meta name="description" content="A pass-and-play social deduction party game." />
+    <title>Impostor</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">🎭</span>
+          <span class="brand-text">IMPOSTOR</span>
+        </div>
+        <div class="header-actions">
+          <span id="roundBadge" class="round-badge" hidden></span>
+          <button
+            id="newGameBtn"
+            class="icon-btn"
+            type="button"
+            aria-label="Start a new game"
+            title="New game"
+            hidden
+          >
+            ↻
+          </button>
+        </div>
+      </header>
 
-<style>
-body { font-family: Arial; text-align: center; padding: 20px; font-size: 22px; }
-h1 { font-size: 36px; }
-h2 { font-size: 28px; }
+      <main id="main">
+        <section id="screen-loading" class="screen loading-screen">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Loading word list…</p>
+        </section>
 
-input, button {
-  padding: 14px;
-  margin: 8px;
-  font-size: 22px;
-  width: 90%;
-  max-width: 360px;
-}
+        <section id="screen-error" class="screen" hidden>
+          <div class="card error-card">
+            <p class="eyebrow">SOMETHING WENT WRONG</p>
+            <h2>Could not start the game</h2>
+            <p id="errorMessage" class="muted"></p>
+            <p class="hint">
+              Serve the folder over HTTP, for example with
+              <code>python3 -m http.server</code>, and make sure
+              <code>data/words.json</code> exists.
+            </p>
+            <button id="retryBtn" class="btn btn-primary" type="button">Try again</button>
+          </div>
+        </section>
 
-.hidden { display: none; }
-.player-button { display:block; margin:10px auto; font-size:24px; }
-.player-button:disabled { background:#ccc; }
+        <section id="screen-setup" class="screen" hidden>
+          <div class="hero">
+            <p class="eyebrow">PASS &amp; PLAY</p>
+            <h1>Find the <span>impostor</span>.</h1>
+            <p class="hero-copy">
+              One phone. One secret word. Everyone is innocent — except one or two.
+            </p>
+          </div>
 
-.scoreboard { margin-bottom:15px; font-size:20px; }
-.timer { font-size:48px; margin:20px; }
-.category { font-weight:bold; font-size:24px; }
-.target { color:darkred; font-size:24px; }
-</style>
-</head>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Players</h2>
+                <p class="muted small">At least 4 players.</p>
+              </div>
+              <span id="playerCount" class="count-badge">0</span>
+            </div>
 
-<body>
-<h1>Impostor Game</h1>
+            <form id="addPlayerForm" class="add-player" autocomplete="off">
+              <label class="sr-only" for="playerNameInput">Player name</label>
+              <input
+                id="playerNameInput"
+                class="input"
+                type="text"
+                maxlength="20"
+                placeholder="Add a player name"
+                enterkeyhint="done"
+              />
+              <button class="btn btn-secondary" type="submit">Add</button>
+            </form>
 
-<div id="setup">
-  <h2>Add Players</h2>
-  <input id="nameInput" placeholder="Player name">
-  <button type="button" onclick="addPlayer()">Add Player</button>
-  <ul id="playerList"></ul>
-  <button type="button" onclick="startGame()">Start Game</button>
-</div>
+            <ul id="playerList" class="player-list" aria-live="polite"></ul>
+            <p id="playerHint" class="hint">Add at least 4 players to begin.</p>
+          </div>
 
-<div id="playerSelect" class="hidden">
-  <div class="scoreboard" id="scoreboard"></div>
-  <h2>Select Your Name</h2>
-  <div id="playerButtons"></div>
-  <button type="button" onclick="startStarterScreen()">Continue</button>
-</div>
+          <div class="card settings-card">
+            <div>
+              <h2>Categories</h2>
+              <p id="categorySummary" class="muted small">Loading categories…</p>
+            </div>
+            <button id="openCategoriesBtn" class="btn btn-secondary btn-small" type="button">
+              Choose
+            </button>
+          </div>
 
-<div id="revealScreen" class="hidden">
-  <h2 id="revealTitle"></h2>
-  <div class="category" id="categoryText"></div>
-  <div id="revealText"></div>
-  <div class="target" id="targetText"></div>
-  <button type="button" onclick="backToSelection()">Done</button>
-</div>
+          <button id="startGameBtn" class="btn btn-primary btn-large" type="button" disabled>
+            Start game
+          </button>
 
-<div id="starterScreen" class="hidden">
-  <h2>Starting Player</h2>
-  <div style="font-size:40px;" id="starterName"></div>
-  <button type="button" onclick="startDiscussion()">Start Discussion</button>
-</div>
+          <details class="how-to card">
+            <summary>How to play</summary>
+            <div class="how-to-body">
+              <p>
+                Pass the phone around. Each player reveals their role privately. Innocents
+                see the secret word; impostors see the category, a target, and one hint.
+              </p>
+              <p>
+                Discuss for five minutes. Then choose who the group voted out. Catch an
+                impostor and every innocent scores 5 points. If the impostor survives, they
+                score 15 — or 30 if their target was voted out.
+              </p>
+              <p>
+                A player can be the impostor twice in a row, then must sit out two played
+                rounds. Skipped rounds do not affect that limit.
+              </p>
+            </div>
+          </details>
 
-<div id="timerScreen" class="hidden">
-  <h2 id="timerTitle"></h2>
-  <div class="timer" id="timerDisplay"></div>
-  <button type="button" onclick="skipTimer()">Skip Countdown</button>
-</div>
+          <p class="footnote">Your names and categories stay on this device.</p>
+        </section>
 
-<div id="roundEnd" class="hidden">
-  <h2>Round Result</h2>
-  <button type="button" onclick="endRound('lost')">Impostor Lost</button>
-  <button type="button" onclick="endRound('won')">Impostor Won</button>
-  <button type="button" onclick="endRound('target')">Target Out, No Word (15)</button>
-  <button type="button" onclick="endRound('targetWord')">Target + Word (45)</button>
-  <button type="button" onclick="endRound('skip')">Skip Round</button>
-</div>
+        <section id="screen-pass" class="screen" hidden>
+          <div class="section-heading">
+            <p id="passRound" class="eyebrow">ROUND 1</p>
+            <h2>Pass the phone</h2>
+            <p class="muted">Each player taps their own name and keeps their role secret.</p>
+          </div>
 
-<script>
-let players=[], scores={}, data=[], usedWords={}, impostorHistory={};
-let impostor="", target="", category="", word="", hint="";
-let viewedPlayers=new Set(), timerInterval=null, currentTimerPhase="";
+          <div class="progress-card">
+            <div class="progress-meta">
+              <span id="passProgress">0 of 0 players have seen their role</span>
+              <span id="passPercent">0%</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <span id="passProgressBar" class="progress-fill"></span>
+            </div>
+          </div>
 
-fetch("Impostor.json")
-.then(r=>r.json())
-.then(json=>{
-  data=json;
-  data.forEach(o=>usedWords[Object.keys(o)[0]]=new Set());
-});
+          <div id="passList" class="pass-list"></div>
 
-function addPlayer(){
-  const input=document.getElementById("nameInput");
-  const list=document.getElementById("playerList");
-  const n=input.value.trim();
-  if(!n||players.includes(n))return;
+          <div id="readyBlock" class="ready-block" hidden>
+            <span class="ready-icon" aria-hidden="true">✓</span>
+            <div>
+              <h3>Everyone has seen their role</h3>
+              <p class="muted small">Start the five-minute discussion when the phone is back in the middle.</p>
+            </div>
+            <button id="startDiscussionBtn" class="btn btn-primary btn-large" type="button">
+              Start 5:00 discussion
+            </button>
+          </div>
+        </section>
 
-  players.push(n);
-  scores[n]=0;
-  impostorHistory[n]=[];
+        <section id="screen-reveal" class="screen" hidden>
+          <div class="section-heading reveal-heading">
+            <p id="revealRound" class="eyebrow">ROUND 1</p>
+            <h2 id="revealPlayerName">Player</h2>
+            <p class="muted">Keep this screen to yourself.</p>
+          </div>
 
-  const li=document.createElement("li");
-  li.textContent=n;
-  list.appendChild(li);
-  input.value="";
-}
+          <div id="roleCard" class="role-card"></div>
 
-function startGame(){
-  if(players.length<3){alert("Need 3+ players");return;}
-  document.getElementById("setup").classList.add("hidden");
-  newRound();
-}
+          <button id="hideRoleBtn" class="btn btn-primary btn-large" type="button">
+            Hide &amp; pass
+          </button>
+        </section>
 
-function newRound(){
-  viewedPlayers.clear();
+        <section id="screen-deliberation" class="screen" hidden>
+          <div class="deliberation">
+            <p id="deliberationRound" class="eyebrow">ROUND 1 • DELIBERATION</p>
+            <h2>Who is the impostor?</h2>
+            <p class="muted">Talk it out. Give clues. Watch for the bluff.</p>
 
-  let pool=[];
-  players.forEach(p=>{
-    let last5=impostorHistory[p].slice(-5);
-    let count=last5.filter(x=>x).length;
-    let wasLast=last5[last5.length-1]===true;
-    if(count>=2)return;
+            <div id="timerRing" class="timer-ring" role="timer" aria-label="5 minutes remaining">
+              <div class="timer-inner">
+                <span id="timerText" class="timer-text">5:00</span>
+                <span class="timer-label">remaining</span>
+              </div>
+            </div>
 
-    if(!wasLast) for(let i=0;i<5;i++) pool.push(p);
-    else pool.push(p);
-  });
-  if(pool.length===0) pool=[...players];
-  impostor=pool[Math.floor(Math.random()*pool.length)];
+            <div id="deliberationCategory" class="category-pill"></div>
 
-  players.forEach(p=>{
-    impostorHistory[p].push(p===impostor);
-    if(impostorHistory[p].length>5)impostorHistory[p].shift();
-  });
+            <button id="voteNowBtn" class="btn btn-primary btn-large" type="button">
+              Vote now
+            </button>
+            <p class="hint">Voting opens automatically at 0:00.</p>
+          </div>
+        </section>
 
-  target=players.filter(p=>p!==impostor)[Math.floor(Math.random()*(players.length-1))];
-  pickWord();
-  updateScoreboard();
-  createButtons();
-  document.getElementById("roundEnd").classList.add("hidden");
-  document.getElementById("playerSelect").classList.remove("hidden");
-}
+        <section id="screen-vote" class="screen" hidden>
+          <div class="section-heading">
+            <p id="voteRound" class="eyebrow">ROUND 1 • VOTE</p>
+            <h2>Who was voted out?</h2>
+            <p class="muted">Select one player, then confirm the group’s decision.</p>
+          </div>
 
-function pickWord(){
-  let obj,avail;
-  do{
-    obj=data[Math.floor(Math.random()*data.length)];
-    category=Object.keys(obj)[0];
-    avail=Object.keys(obj[category]).filter(w=>!usedWords[category].has(w));
-    if(avail.length===0)usedWords[category].clear();
-  }while(avail.length===0);
-  word=avail[Math.floor(Math.random()*avail.length)];
-  hint=obj[category][word];
-  usedWords[category].add(word);
-}
+          <div id="voteGrid" class="vote-grid" role="group" aria-label="Players"></div>
+          <p id="voteSelection" class="hint">No player selected yet.</p>
 
-function updateScoreboard(){
-  document.getElementById("scoreboard").innerHTML="Scores:<br>"+players.map(p=>`${p}: ${scores[p]}`).join(" | ");
-}
+          <button id="confirmVoteBtn" class="btn btn-primary btn-large" type="button" disabled>
+            Confirm vote
+          </button>
+          <button id="skipRoundBtn" class="btn btn-ghost" type="button">Skip round</button>
+        </section>
 
-function createButtons(){
-  const div=document.getElementById("playerButtons");
-  div.innerHTML="";
-  players.forEach(p=>{
-    let b=document.createElement("button");
-    b.type="button"; b.textContent=p; b.className="player-button";
-    b.onclick=()=>reveal(p,b);
-    div.appendChild(b);
-  });
-}
+        <section id="screen-result" class="screen" hidden>
+          <p id="resultRound" class="eyebrow">ROUND 1 • RESULT</p>
+          <div id="resultHero"></div>
+          <div id="resultDetails"></div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Scoreboard</h2>
+              <span id="scoreboardRound" class="muted small"></span>
+            </div>
+            <ol id="scoreboardList" class="scoreboard-list"></ol>
+          </div>
+          <button id="nextRoundBtn" class="btn btn-primary btn-large" type="button">
+            Next round
+          </button>
+          <p class="footnote">The host can start over any time with the reset button above.</p>
+        </section>
 
-function reveal(p,b){
-  if(viewedPlayers.has(p))return;
-  viewedPlayers.add(p); b.disabled=true;
-  document.getElementById("playerSelect").classList.add("hidden");
-  document.getElementById("revealScreen").classList.remove("hidden");
+      </main>
+    </div>
 
-  document.getElementById("categoryText").textContent=`Category: ${category}`;
-  document.getElementById("targetText").textContent="";
+    <div id="categoryModal" class="modal" hidden>
+      <div class="modal-backdrop" data-close-categories></div>
+      <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="categoryTitle">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow">GAME SETTINGS</p>
+            <h2 id="categoryTitle">Categories</h2>
+          </div>
+          <button id="closeCategoriesBtn" class="icon-btn" type="button" aria-label="Close categories">
+            ×
+          </button>
+        </header>
+        <div class="modal-body">
+          <p class="muted small">Only words from the selected categories will be used.</p>
+          <div id="categoryList" class="category-list"></div>
+          <p id="categoryError" class="error-text" hidden>Select at least one category.</p>
+        </div>
+        <footer class="modal-footer">
+          <div class="modal-tools">
+            <button id="selectAllCategoriesBtn" class="text-btn" type="button">Select all</button>
+            <button id="clearAllCategoriesBtn" class="text-btn" type="button">Clear</button>
+          </div>
+          <button id="saveCategoriesBtn" class="btn btn-primary" type="button">Save</button>
+        </footer>
+      </div>
+    </div>
 
-  if(p===impostor){
-    document.getElementById("revealTitle").textContent="You are the IMPOSTOR";
-    document.getElementById("revealText").textContent=`Hint: ${hint}`;
-    document.getElementById("targetText").textContent=`Target: ${target}`;
-  }else{
-    document.getElementById("revealTitle").textContent="You know the word";
-    document.getElementById("revealText").textContent=`Word: ${word}`;
-  }
-}
+    <div id="confirmModal" class="modal" hidden>
+      <div class="modal-backdrop" data-close-confirm></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle">Are you sure?</h2>
+        <p id="confirmMessage" class="muted"></p>
+        <div class="modal-actions">
+          <button id="confirmCancelBtn" class="btn btn-secondary" type="button">Cancel</button>
+          <button id="confirmOkBtn" class="btn btn-primary" type="button">Confirm</button>
+        </div>
+      </div>
+    </div>
 
-function backToSelection(){
-  document.getElementById("revealScreen").classList.add("hidden");
-  document.getElementById("playerSelect").classList.remove("hidden");
-}
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-function startStarterScreen(){
-  let starter=players[Math.floor(Math.random()*players.length)];
-  document.getElementById("playerSelect").classList.add("hidden");
-  document.getElementById("starterScreen").classList.remove("hidden");
-  document.getElementById("starterName").textContent=starter;
-}
-
-function startDiscussion(){
-  document.getElementById("starterScreen").classList.add("hidden");
-  startTimer(300,"Discussion & Voting");
-}
-
-function startTimer(sec,title){
-  clearInterval(timerInterval);
-  currentTimerPhase=title;
-  document.getElementById("timerScreen").classList.remove("hidden");
-  document.getElementById("timerTitle").textContent=title;
-  let t=sec; updateTimer(t);
-  timerInterval=setInterval(()=>{
-    t--; updateTimer(t);
-    if(t<=0){clearInterval(timerInterval); handleTimerEnd();}
-  },1000);
-}
-
-function updateTimer(t){
-  document.getElementById("timerDisplay").textContent=`${Math.floor(t/60)}:${(t%60).toString().padStart(2,"0")}`;
-}
-
-function skipTimer(){ clearInterval(timerInterval); handleTimerEnd(); }
-
-function handleTimerEnd(){
-  if(currentTimerPhase==="Discussion & Voting")
-    startTimer(120,"Impostor Guess");
-  else{
-    document.getElementById("timerScreen").classList.add("hidden");
-    document.getElementById("roundEnd").classList.remove("hidden");
-  }
-}
-
-function endRound(r){
-  if(r==="lost") players.forEach(p=>{if(p!==impostor)scores[p]+=5;});
-  if(r==="won") scores[impostor]+=15;
-  if(r==="target") scores[impostor]+=15;
-  if(r==="targetWord") scores[impostor]+=45;
-  newRound();
-}
-</script>
-</body>
+    <script type="module" src="app.js"></script>
+  </body>
 </html>
