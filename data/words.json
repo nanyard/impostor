@@ -179,6 +179,23 @@
         { "word": "Backpacking", "hints": ["hostel", "budget", "adventure"] },
         { "word": "Sightseeing", "hints": ["landmarks", "camera", "tour"] }
       ]
+    },
+    {
+      "id": "family",
+      "name": "Family",
+      "words": [
+        { "word": "Kaela", "hints": ["person", "sibling"] },
+        { "word": "Eilise", "hints": ["person", "sibling"] },
+        { "word": "Mary-Kate", "hints": ["person", "sibling"] },
+        { "word": "Erin", "hints": ["person", "sibling"] },
+        { "word": "Will", "hints": ["person", "sibling"] },
+        { "word": "Nathan", "hints": ["person", "sibling"] },
+        { "word": "Mumzie", "hints": ["person", "extended"] },
+        { "word": "Poppie", "hints": ["person", "extended"] },
+        { "word": "Grammy", "hints": ["person", "extended"] },
+        { "word": "Took", "hints": ["person", "extended"] },
+        { "word": "Pat", "hints": ["person", "extended"] }
+      ]
     }
   ]
 }
